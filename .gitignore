@@ -1,0 +1,6 @@
+.editorconfig
+.github
+./.env
+
+/node_modules
+.env
