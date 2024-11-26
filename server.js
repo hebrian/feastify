@@ -85,6 +85,66 @@ async function getUser(uid) {
     }
 }
 
+async function getGroceryItems() {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        return await collection.find().toArray();
+    } finally {
+        await client.close();
+    }
+}
+
+async function addGroceryItem(item) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        await collection.insertOne(item);
+    } finally {
+        await client.close();
+    }
+}
+
+async function updateGroceryItem(id, amount) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        await collection.updateOne({ _id: new ObjectId(id) }, { $set: { amount } });
+    } finally {
+        await client.close();
+    }
+}
+
+async function deleteGroceryItem(id) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        await collection.deleteOne({ _id: new ObjectId(id) });
+    } finally {
+        await client.close();
+    }
+}
+
+async function clearGroceryList() {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const ddbNameb = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        await collection.deleteMany({});
+    } finally {
+        await client.close();
+    }
+}
+
 
 //=========================== ROUTES ===========================
 
@@ -167,6 +227,71 @@ app.post('/requestRegister', async(req, res) => {
         res.status(500).send({
             error: `An error occurred during registration: ${error}`,
         });
+    }
+});
+
+app.get('/groceries', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'groceries.html'));
+});
+
+// API Endpoints for Grocery List
+
+// Fetch all grocery items
+app.get('/api/groceries', async (req, res) => {
+    try {
+        const items = await getGroceryItems();
+        res.json(items);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching grocery items");
+    }
+});
+
+// Add a grocery item
+app.post('/api/groceries', async (req, res) => {
+    try {
+        const item = req.body; // { name, amount, unit }
+        await addGroceryItem(item);
+        res.status(201).send("Item added successfully");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error adding grocery item");
+    }
+});
+
+// Update a grocery item's amount
+app.put('/api/groceries/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount } = req.body;
+        await updateGroceryItem(id, amount);
+        res.send("Item updated successfully");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error updating grocery item");
+    }
+});
+
+// Delete a grocery item
+app.delete('/api/groceries/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await deleteGroceryItem(id);
+        res.send("Item deleted successfully");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error deleting grocery item");
+    }
+});
+
+// Clear all grocery items
+app.delete('/api/groceries', async (req, res) => {
+    try {
+        await clearGroceryList();
+        res.send("All items cleared successfully");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error clearing grocery list");
     }
 });
 
