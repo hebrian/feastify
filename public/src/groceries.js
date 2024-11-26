@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listeners
     searchButton.addEventListener('click', async () => {
       const query = searchBar.value;
-      const response = await fetch(`https://api.spoonacular.com/food/ingredients/search?query=${query}&apiKey=YOUR_API_KEY`);
+      const response = await fetch(`https://api.spoonacular.com/food/ingredients/search?query=${query}&apiKey=9623bac1fe144fb1a5cf881f085f66d1`);
       const data = await response.json();
       if (data.results && data.results.length > 0) {
         const item = data.results[0].name;

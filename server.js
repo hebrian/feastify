@@ -230,10 +230,6 @@ app.post('/requestRegister', async(req, res) => {
     }
 });
 
-app.get('/groceries', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'groceries.html'));
-});
-
 // API Endpoints for Grocery List
 
 // Fetch all grocery items
