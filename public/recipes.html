@@ -11,6 +11,15 @@
 <body>
     <a href="pantry.html">Pantry</a>
     <a href="groceries.html">Grocery List</a>
+    <button id="logout-button">Logout</button>
 </body>
+<script>
+    document.getElementById('logout-button').addEventListener("click", () => {
+        console.log("hello");
+        localStorage.removeItem("uid");
+        localStorage.removeItem("isAuthenticated");
+        window.location.href = "/";
+    })
+</script>
 
 </html>

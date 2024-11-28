@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const bcrypt = require("bcrypt");
+const axios = require("axios");
 
 
 const app = express();
@@ -14,8 +15,8 @@ app.use(express.json());
 
 var dotenv = require("dotenv").config();
 var new_uri = process.env.mongo_uri;
+var api_key = process.env.spoon_api_key;
 
-console.log(new_uri);
 
 
 //=========================== FUNCTIONS ===========================
@@ -32,7 +33,6 @@ async function getUserInfo(email) {
             email: email,
         });
 
-        console.log("got user info: ", user);
 
         return user;
     } catch (error) {
@@ -74,7 +74,6 @@ async function getUser(uid) {
             _id: new ObjectId(uid)
         });
 
-        console.log("got user info: ", user);
 
         return user;
     } catch (error) {
@@ -83,6 +82,80 @@ async function getUser(uid) {
     } finally {
         await client.close();
     }
+}
+
+async function getPantry(uid) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("pantry");
+        const res = collection.find({ owner: uid });
+
+
+        let items = []
+        for await (var doc of res) {
+            doc._id = doc._id.toString();
+            items.push(doc);
+        }
+        return items;
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+
+    }
+}
+
+
+
+async function addToPantry(uid, ingredient) {
+    const client = new MongoClient(new_uri);
+    console.log("wtf");
+    try {
+        await client.connect();
+
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("pantry");
+        const query = { owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }
+        const item = await collection.findOne(query);
+        console.log(item);
+        if (item === null) {
+            let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
+            ingredient.nutrition = nutrition;
+            ingredient.cost = cost;
+            ingredient.owner = uid;
+            console.log(ingredient);
+            let res = await collection.insertOne(ingredient);
+
+            console.log(res.insertedId);
+        } else {
+            let amount = item.amount + ingredient.amount;
+            const result = await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
+
+        }
+
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+
+    }
+}
+
+async function getCostAndNutrition(spoon_id) {
+    let query = `?apiKey=${api_key}&amount=1`;
+    const res = await axios.get(`https://api.spoonacular.com/food/ingredients/${spoon_id}/information${query}`);
+    return { nutrition: res.data.nutrition, cost: res.data.estimatedCost };
+}
+
+async function getIngredients(searchTerm) {
+    let query = `?query=${searchTerm}&number=${10}&apiKey=${api_key}`;
+    const res = await axios.get(`https://api.spoonacular.com/food/ingredients/search${query}`);
+    return res.data.results;
 }
 
 
@@ -125,9 +198,24 @@ app.post('/getUser', async(req, res) => {
     }
 })
 
+app.post('/addToPantry', async(req, res) => {
+    await addToPantry(req.body.owner, req.body.ingredient);
+    res.sendStatus(200);
+})
+
+app.post('/getPantry', async(req, res) => {
+    const pantry = await getPantry(req.body.owner);
+    res.json({ pantry });
+})
+
+app.post('/findIngredients', async(req, res) => {
+    const searchTerm = req.body.term;
+    const ingredients = await getIngredients(searchTerm);
+    res.json(ingredients);
+})
+
 app.post('/requestLogin', async(req, res) => {
     const { email, password } = req.body;
-    console.log(req.body);
 
     const user = await getUserInfo(email);
     if (user !== null) {
@@ -149,7 +237,6 @@ app.post('/requestRegister', async(req, res) => {
     const password = requestData.password;
     const fname = requestData.fname;
     const lname = requestData.lname;
-    console.log(requestData);
     try {
         const user = await getUserInfo(email);
         if (user != null) {
