@@ -17,6 +17,8 @@ var new_uri = process.env.mongo_uri;
 
 console.log(new_uri);
 
+const recipeRoutes = require('./routes/recipes');
+app.use('/api/recipes', recipeRoutes);
 
 //=========================== FUNCTIONS ===========================
 
