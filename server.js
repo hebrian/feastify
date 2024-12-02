@@ -20,6 +20,8 @@ console.log(new_uri);
 const recipeRoutes = require('./routes/recipes');
 app.use('/api/recipes', recipeRoutes);
 
+const spoonacularRoutes = require('./routes/spoonacular');
+app.use('/', spoonacularRoutes);
 //=========================== FUNCTIONS ===========================
 
 
