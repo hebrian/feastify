@@ -22,6 +22,17 @@ app.use('/api/recipes', recipeRoutes);
 
 const spoonacularRoutes = require('./routes/spoonacular');
 app.use('/', spoonacularRoutes);
+
+const mongoose = require('mongoose');
+// Connect to MongoDB using Mongoose
+mongoose.connect(process.env.mongo_uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log('Connected to MongoDB');
+}).catch((err) => {
+    console.error('Error connecting to MongoDB:', err.message);
+});
 //=========================== FUNCTIONS ===========================
 
 

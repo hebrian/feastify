@@ -4,7 +4,8 @@ document.getElementById('search-form').addEventListener('submit', async function
     const query = document.getElementById('search-query').value;
 
     try {
-        const response = await fetch(`/api/spoonacular?query=${query}`); // Call the backend endpoint
+        // Fetch recipes from the Spoonacular API via your backend
+        const response = await fetch(`/api/spoonacular?query=${query}`);
         const recipes = await response.json();
 
         const tableBody = document.querySelector('#resultsTable tbody');
@@ -30,6 +31,13 @@ document.getElementById('search-form').addEventListener('submit', async function
 });
 
 document.getElementById('save-button').addEventListener('click', async function () {
+    const userId = sessionStorage.getItem('userId'); // Reuse userId from sessionStorage
+
+    if (!userId) {
+        alert('User ID is not available. Please log in again.');
+        return;
+    }
+
     const selectedRecipeIds = Array.from(document.querySelectorAll('#resultsTable input[type="checkbox"]:checked'))
         .map(input => input.value);
 
@@ -39,10 +47,11 @@ document.getElementById('save-button').addEventListener('click', async function 
     }
 
     try {
+        // Send selected recipe IDs to the backend along with the userId
         const response = await fetch('/api/saveRecipes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ recipeIds: selectedRecipeIds }),
+            body: JSON.stringify({ userId: userId, recipeIds: selectedRecipeIds }),
         });
 
         if (response.ok) {
