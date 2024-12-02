@@ -7,14 +7,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API_KEY = '9623bac1fe144fb1a5cf881f085f66d1';
 
+  const manualAddButton = document.getElementById("manual-add-button");
+  const modal = document.getElementById("manual-add-modal");
+  const closeModal = document.getElementById("close-modal");
+  const manualAddForm = document.getElementById("manual-add-form");
+
+  // Open the modal
+  manualAddButton.addEventListener("click", () => {
+    modal.style.display = "block";
+  });
+
+  // Close the modal
+  closeModal.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  // Close the modal when clicking outside of it
+  window.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
+  // Handle manual add form submission
+  manualAddForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = document.getElementById("manual-name").value.trim();
+    const amount = parseInt(document.getElementById("manual-amount").value, 10);
+
+    if (!name || amount <= 0) {
+      alert("Please provide valid name and amount.");
+      return;
+    }
+
+    const owner = localStorage.getItem("uid");
+    console.log("Owner UID:", owner);
+    const ingredient = { name, amount, owner };
+
+    try {
+      const response = await fetch(`/addToGroceries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ owner: owner, ingredient: ingredient })
+      });
+
+      if (response.ok) {
+        console.log("Manually added grocery item:", ingredient);
+        alert("Item added successfully!");
+        modal.style.display = "none"; // Close the modal
+        fetchGroceries(); // Refresh the grocery list
+      } else {
+        console.error("Failed to manually add grocery item:", await response.text());
+        alert("Failed to add item.");
+      }
+    } catch (error) {
+      console.error("Error adding grocery item manually:", error);
+      alert("An error occurred while adding the item.");
+    }
+  });
+
   // Fetch grocery items from the server
   async function loadGroceries() {
     let owner = localStorage.getItem("uid");
     console.log("Loading groceries for UID:", owner);
   
     try {
-      const response = await fetch(`/api/groceries/${owner}`, {
-        method: 'GET',
+      const response = await fetch(`/getGroceries`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
   
@@ -43,10 +103,10 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Owner UID:", owner);
   
     try {
-      const response = await fetch('/api/groceries', {
+      const response = await fetch('/addToGroceries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ owner, ingredient }),
+        body: JSON.stringify({ owner: owner, ingredient: ingredient })
       });
   
       if (response.ok) {

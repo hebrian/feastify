@@ -1,38 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feastify - Grocery List</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Basic styling for modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+    </style>
 </head>
-
 <body>
     <a href="recipes.html">Home</a>
 
     <h1>Grocery List</h1>
+
+    <!-- Button to trigger manual add modal -->
+    <button id="manual-add-button" style="position: absolute; top: 20px; right: 20px;">Add Manually</button>
+
+    <!-- Manual Add Modal -->
+    <div id="manual-add-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal" class="close">&times;</span>
+            <h2>Add Grocery Item</h2>
+            <form id="manual-add-form">
+                <label for="manual-name">Name:</label>
+                <input type="text" id="manual-name" required>
+                <br><br>
+                <label for="manual-amount">Amount:</label>
+                <input type="number" id="manual-amount" min="1" required>
+                <br><br>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+
     <div>
-    <input id="search-bar" type="text" placeholder="Search for grocery items..." />
-    <button id="search-button">Search</button>
+        <input id="search-bar" type="text" placeholder="Search for grocery items..." />
+        <button id="search-button">Search</button>
     </div>
     <div id="search-results" style="margin-top: 20px;">
-    <!-- Search results will appear here -->
+        <!-- Search results will appear here -->
     </div>
     <div>
-    <table id="grocery-table">
-        <thead>
-        <tr>
-            <th>Item</th>
-            <th>Amount</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+        <table id="grocery-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
     <button id="shopped-button">Shopped</button>
+
     <script src="src/groceries.js"></script>
 </body>
-
 </html>

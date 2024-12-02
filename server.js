@@ -271,30 +271,6 @@ app.post('/getGroceries', async(req, res) => {
     res.json({ groceries });
 })
 
-// Fetch all grocery items
-app.get('/api/groceries/:uid', async (req, res) => {
-    try {
-      const { uid } = req.params;
-      const groceries = await loadGroceries(uid);
-      res.json(groceries);
-    } catch (error) {
-      console.error("Error in /api/groceries/:uid GET:", error);
-      res.status(500).json({ error: "Failed to fetch grocery items" });
-    }
-})
-
-// Add a grocery item
-app.post('/api/groceries', async (req, res) => {
-    try {
-      const { uid, ingredient } = req.body; // Assume `uid` and `ingredient` are sent in the request body
-      await addToGroceries(uid, ingredient);
-      res.status(201).json({ message: "Grocery item added successfully" });
-    } catch (error) {
-      console.error("Error in /api/groceries POST:", error);
-      res.status(500).json({ error: "Failed to add grocery item" });
-    }
-});
-
 // Update a grocery item's amount
 app.put('/api/groceries/:id', async (req, res) => {
     try {
