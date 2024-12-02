@@ -13,20 +13,23 @@
 
     <h1>Grocery List</h1>
     <div>
-        <input id="search-bar" type="text" placeholder="Search for grocery items..." />
-        <button id="search-button">Search</button>
+    <input id="search-bar" type="text" placeholder="Search for grocery items..." />
+    <button id="search-button">Search</button>
+    </div>
+    <div id="search-results" style="margin-top: 20px;">
+    <!-- Search results will appear here -->
     </div>
     <div>
-        <table id="grocery-table">
+    <table id="grocery-table">
         <thead>
-            <tr>
+        <tr>
             <th>Item</th>
             <th>Amount</th>
             <th>Actions</th>
-            </tr>
+        </tr>
         </thead>
         <tbody></tbody>
-        </table>
+    </table>
     </div>
     <button id="shopped-button">Shopped</button>
     <script src="src/groceries.js"></script>

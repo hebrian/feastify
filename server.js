@@ -85,61 +85,92 @@ async function getUser(uid) {
     }
 }
 
-async function getGroceryItems() {
+async function getGroceries(uid) {
     const client = new MongoClient(new_uri);
     try {
         await client.connect();
         const dbName = client.db("feastify");
         const collection = dbName.collection("groceries");
-        return await collection.find().toArray();
+        return await collection.find({ owner: uid });
+    } catch (error) {
+        console.error("error");
+        throw error;
     } finally {
         await client.close();
     }
 }
 
-async function addGroceryItem(item) {
+async function addToGroceries(uid, ingredient) {
+    const client = new MongoClient(new_uri);
+    console.log("adding ingredient to gro db");
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        const query = { owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }
+        const item = await collection.findOne(query);
+        console.log(item);
+        if (item === null) {
+            ingredient.owner = uid;
+            console.log(ingredient);
+            let res = await collection.insertOne(ingredient);
+
+            console.log(res.insertedId);
+        } else {
+            let amount = item.amount + ingredient.amount;
+            await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
+        }
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+    }
+}
+
+async function updateGroceryItem(uid, ingredient, amount) {
     const client = new MongoClient(new_uri);
     try {
         await client.connect();
         const dbName = client.db("feastify");
         const collection = dbName.collection("groceries");
-        await collection.insertOne(item);
+        await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount } });
+    } catch (error) {
+        console.error("error");
+        throw error;
     } finally {
         await client.close();
     }
 }
 
-async function updateGroceryItem(id, amount) {
+async function deleteGroceryItem(uid, ingredient) {
     const client = new MongoClient(new_uri);
     try {
         await client.connect();
         const dbName = client.db("feastify");
         const collection = dbName.collection("groceries");
-        await collection.updateOne({ _id: new ObjectId(id) }, { $set: { amount } });
+        await collection.deleteOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id});
+    } catch (error) {
+        console.error("error");
+        throw error;
     } finally {
         await client.close();
     }
 }
 
-async function deleteGroceryItem(id) {
+async function clearGroceryList(uid) {
     const client = new MongoClient(new_uri);
     try {
         await client.connect();
         const dbName = client.db("feastify");
         const collection = dbName.collection("groceries");
-        await collection.deleteOne({ _id: new ObjectId(id) });
-    } finally {
-        await client.close();
-    }
-}
-
-async function clearGroceryList() {
-    const client = new MongoClient(new_uri);
-    try {
-        await client.connect();
-        const ddbNameb = client.db("feastify");
-        const collection = dbName.collection("groceries");
-        await collection.deleteMany({});
+        const query = { owner: new ObjectId(uid)}
+        if (query != null) {
+            await collection.deleteMany({});
+        }    
+    } catch (error) {
+        console.error("error");
+        throw error;
     } finally {
         await client.close();
     }
@@ -230,28 +261,37 @@ app.post('/requestRegister', async(req, res) => {
     }
 });
 
-// API Endpoints for Grocery List
+app.post('/addToGroceries', async(req, res) => {
+    await addToGroceries(req.body.owner, req.body.ingredient);
+    res.sendStatus(200);
+})
+
+app.post('/getGroceries', async(req, res) => {
+    const groceries = await getGroceries(req.body.owner);
+    res.json({ groceries });
+})
 
 // Fetch all grocery items
-app.get('/api/groceries', async (req, res) => {
+app.get('/api/groceries/:uid', async (req, res) => {
     try {
-        const items = await getGroceryItems();
-        res.json(items);
+      const { uid } = req.params;
+      const groceries = await loadGroceries(uid);
+      res.json(groceries);
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Error fetching grocery items");
+      console.error("Error in /api/groceries/:uid GET:", error);
+      res.status(500).json({ error: "Failed to fetch grocery items" });
     }
-});
+})
 
 // Add a grocery item
 app.post('/api/groceries', async (req, res) => {
     try {
-        const item = req.body; // { name, amount, unit }
-        await addGroceryItem(item);
-        res.status(201).send("Item added successfully");
+      const { uid, ingredient } = req.body; // Assume `uid` and `ingredient` are sent in the request body
+      await addToGroceries(uid, ingredient);
+      res.status(201).json({ message: "Grocery item added successfully" });
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Error adding grocery item");
+      console.error("Error in /api/groceries POST:", error);
+      res.status(500).json({ error: "Failed to add grocery item" });
     }
 });
 
@@ -281,13 +321,14 @@ app.delete('/api/groceries/:id', async (req, res) => {
 });
 
 // Clear all grocery items
-app.delete('/api/groceries', async (req, res) => {
+app.delete('/api/groceries/:uid', async (req, res) => {
     try {
-        await clearGroceryList();
-        res.send("All items cleared successfully");
+      const { uid } = req.params;
+      await clearGroceryList(uid);
+      res.json({ message: "Grocery list cleared successfully" });
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Error clearing grocery list");
+      console.error("Error in /api/groceries/:uid DELETE:", error);
+      res.status(500).json({ error: "Failed to clear grocery list" });
     }
 });
 
