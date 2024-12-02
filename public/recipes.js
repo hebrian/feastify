@@ -14,10 +14,10 @@ async function fetchRecipes() {
         tableBody.innerHTML = ''; // Clear existing rows
 
         recipes.forEach(recipe => {
-            const row = document.createElement('tr');
+                    const row = document.createElement('tr');
 
-            row.innerHTML = `
-                <td>${recipe.name}</td>
+                    row.innerHTML = `
+                <td><a href="recipe.html?id=${recipe._id}">${recipe.name}</a></td>
                 <td>${recipe.meta.serves || 'N/A'}</td>
                 <td>${recipe.meta.cuisine || 'Unknown'}</td>
                 <td>${recipe.meta.cost ? `$${recipe.meta.cost.toFixed(2)}` : 'N/A'}</td>
