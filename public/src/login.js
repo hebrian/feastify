@@ -3,6 +3,7 @@ document.getElementById('login-form').addEventListener('submit', function(event)
 
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
+
     fetch('/requestLogin', {
             method: 'POST',
             headers: {
@@ -13,8 +14,13 @@ document.getElementById('login-form').addEventListener('submit', function(event)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Save the user's ID in session storage
+                sessionStorage.setItem('userId', data.uid);
+
+                // Redirect to the recipes page
                 window.location.href = '/recipes';
             } else {
+                // Display the error message
                 document.getElementById('error-message').style.display = 'block';
                 document.getElementById('error-message').innerText = data.message;
             }
