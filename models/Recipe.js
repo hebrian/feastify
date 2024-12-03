@@ -17,6 +17,8 @@ const RecipeSchema = new mongoose.Schema({
         cuisine: { type: String }, // e.g., "Italian", "Mexican"
         cost: { type: Number } // Estimated cost of the recipe
     },
+    image: { type: String }, // URL for the recipe image
+    imageType: { type: String }, // Type of the image (e.g., "jpg", "png")
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user
 });
 
@@ -25,5 +27,3 @@ const Recipe = mongoose.model('Recipe', RecipeSchema);
 
 // Export the model for use in other parts of the app
 module.exports = Recipe;
-// const mongoose = require('mongoose');
-

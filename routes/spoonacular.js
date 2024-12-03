@@ -17,7 +17,17 @@ router.get('/api/spoonacular', async (req, res) => {
         const response = await axios.get(apiUrl);
 
         // Send the results directly to the front-end
-        res.json(response.data.results);
+        const resultsWithImages = response.data.results.map(recipe => ({
+            id: recipe.id,
+            title: recipe.title,
+            image: recipe.image, // Include image URL
+            imageType: recipe.imageType, // Include image type
+            cuisines: recipe.cuisines,
+            servings: recipe.servings,
+            pricePerServing: recipe.pricePerServing,
+        }));
+
+        res.json(resultsWithImages);
     } catch (error) {
         console.error('Error fetching recipes from Spoonacular:', error.message);
         res.status(500).json({ error: 'Failed to fetch recipes from Spoonacular' });
@@ -60,6 +70,8 @@ router.post('/api/saveRecipes', async (req, res) => {
                     cuisine: recipe.cuisines.length > 0 ? recipe.cuisines[0] : 'Unknown',
                     cost: recipe.pricePerServing ? recipe.pricePerServing / 100 : 0,
                 },
+                image: recipe.image || '', // Save image URL
+                imageType: recipe.imageType || '', // Save image type
                 userId, // Use userId from the request body
             });
         }
@@ -73,6 +85,5 @@ router.post('/api/saveRecipes', async (req, res) => {
         res.status(500).json({ error: 'Failed to save recipes.' });
     }
 });
-
 
 module.exports = router;
