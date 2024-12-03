@@ -10,6 +10,34 @@
 
 <body>
     <a href="recipes.html">Home</a>
+    <div class="root-container">
+        <label className="views-label">
+            <input class="views-radio" type="radio" name="radio" value="pantry" checked="true"/>
+            <span class="views-span-checked">My Pantry</span>
+        </label>
+        <label className="views-label">
+            <input class="views-radio" type="radio" name="radio" value="search"/>
+            <span class="views-span-checked">Add Items</span>
+        </label>
+        <div class="search-input-container">
+            <form class="search-form" id="pantry-search-form" action="">
+                <input type="text" placeholder="Search Items" name="search" id="search" />
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        <div id="pantry-container">
+            <ul id="pantry">
+
+            </ul>
+        </div>
+        <div id="results-container" style="display:hidden">
+            <ul id="results">
+
+            </ul>
+        </div>
+    </div>
+
+    <script src="src/pantry.js"></script>
 </body>
 
 </html>
