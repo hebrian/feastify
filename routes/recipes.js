@@ -5,7 +5,7 @@ const router = express.Router();
 const mongoUri = process.env.mongo_uri; // Load MongoDB URI from environment variables
 
 // GET /api/recipes - Fetch recipes for the logged-in user
-router.get('/', async (req, res) => {
+router.get('/', async(req, res) => {
     const userId = req.query.userId; // Get userId from the query parameters
 
     if (!userId) {
@@ -26,5 +26,21 @@ router.get('/', async (req, res) => {
     }
 });
 
-module.exports = router;
+router.get('/recipe', async(req, res) => {
+    const recipeID = req.query.recipeID;
 
+    const client = new MongoClient(mongoUri);
+    try {
+        await client.connect();
+        const db = client.db('feastify');
+        const recipes = await db.collection('recipes').findOne({ _id: new ObjectId(recipeID) });
+        res.json(recipes);
+    } catch (error) {
+        console.error('Error fetching recipe:', error);
+        res.status(500).json({ error: 'Failed to fetch recipe' });
+    } finally {
+        await client.close();
+    }
+})
+
+module.exports = router;
