@@ -15,7 +15,7 @@ document.getElementById('login-form').addEventListener('submit', function(event)
         .then(data => {
             if (data.success) {
                 // Save the user's ID in session storage
-                sessionStorage.setItem('userId', data.uid);
+                localStorage.setItem('uid', data.uid);
 
                 // Redirect to the recipes page
                 window.location.href = '/recipes';
