@@ -18,7 +18,22 @@ var new_uri = process.env.mongo_uri;
 var api_key = process.env.spoon_api_key;
 
 
+const recipeRoutes = require('./routes/recipes');
+app.use('/api/recipes', recipeRoutes);
 
+const spoonacularRoutes = require('./routes/spoonacular');
+app.use('/', spoonacularRoutes);
+
+const mongoose = require('mongoose');
+// Connect to MongoDB using Mongoose
+mongoose.connect(process.env.mongo_uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log('Connected to MongoDB');
+}).catch((err) => {
+    console.error('Error connecting to MongoDB:', err.message);
+});
 //=========================== FUNCTIONS ===========================
 
 
@@ -100,11 +115,29 @@ async function getPantry(uid) {
             items.push(doc);
         }
         return items;
+      } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+
+
+    }
+}
+
+async function getGroceries(uid) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        return await collection.find({ owner: uid });
     } catch (error) {
         console.error("error");
         throw error;
     } finally {
         await client.close();
+
 
     }
 }
@@ -146,6 +179,34 @@ async function addToPantry(uid, ingredient) {
     }
 }
 
+async function addToGroceries(uid, ingredient) {
+    const client = new MongoClient(new_uri);
+    console.log("adding ingredient to gro db");
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        const query = { owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }
+        const item = await collection.findOne(query);
+        console.log(item);
+        if (item === null) {
+            ingredient.owner = uid;
+            console.log(ingredient);
+            let res = await collection.insertOne(ingredient);
+
+            console.log(res.insertedId);
+        } else {
+            let amount = item.amount + ingredient.amount;
+            await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
+        }
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+    }
+}
+
 async function getCostAndNutrition(spoon_id) {
     let query = `?apiKey=${api_key}&amount=1`;
     const res = await axios.get(`https://api.spoonacular.com/food/ingredients/${spoon_id}/information${query}`);
@@ -156,6 +217,54 @@ async function getIngredients(searchTerm) {
     let query = `?query=${searchTerm}&number=${10}&apiKey=${api_key}`;
     const res = await axios.get(`https://api.spoonacular.com/food/ingredients/search${query}`);
     return res.data.results;
+}
+
+async function updateGroceryItem(uid, ingredient, amount) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount } });
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+    }
+}
+
+async function deleteGroceryItem(uid, ingredient) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        await collection.deleteOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id});
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+    }
+}
+
+async function clearGroceryList(uid) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        const query = { owner: new ObjectId(uid)}
+        if (query != null) {
+            await collection.deleteMany({});
+        }    
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+    }
 }
 
 
@@ -254,6 +363,53 @@ app.post('/requestRegister', async(req, res) => {
         res.status(500).send({
             error: `An error occurred during registration: ${error}`,
         });
+    }
+});
+
+app.post('/addToGroceries', async(req, res) => {
+    await addToGroceries(req.body.owner, req.body.ingredient);
+    res.sendStatus(200);
+})
+
+app.post('/getGroceries', async(req, res) => {
+    const groceries = await getGroceries(req.body.owner);
+    res.json({ groceries });
+})
+
+// Update a grocery item's amount
+app.put('/api/groceries/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount } = req.body;
+        await updateGroceryItem(id, amount);
+        res.send("Item updated successfully");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error updating grocery item");
+    }
+});
+
+// Delete a grocery item
+app.delete('/api/groceries/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await deleteGroceryItem(id);
+        res.send("Item deleted successfully");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error deleting grocery item");
+    }
+});
+
+// Clear all grocery items
+app.delete('/api/groceries/:uid', async (req, res) => {
+    try {
+      const { uid } = req.params;
+      await clearGroceryList(uid);
+      res.json({ message: "Grocery list cleared successfully" });
+    } catch (error) {
+      console.error("Error in /api/groceries/:uid DELETE:", error);
+      res.status(500).json({ error: "Failed to clear grocery list" });
     }
 });
 

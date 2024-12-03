@@ -9,9 +9,27 @@
 </head>
 
 <body>
+    <h1>My Recipes</h1>
     <a href="pantry.html">Pantry</a>
     <a href="groceries.html">Grocery List</a>
     <button id="logout-button">Logout</button>
+
+    <table id="recipesTable" border="1">
+        <thead>
+            <tr>
+                <th>Recipe Name</th>
+                <th>Serves</th>
+                <th>Cuisine Type</th>
+                <th>Cost</th>
+                <th>Number of Times Cooked</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be dynamically populated -->
+        </tbody>
+    </table>
+    <script src="recipes.js"></script>
+    <a href="recipes_search.html">Search for Additional Recipes</a>
 </body>
 <script>
     document.getElementById('logout-button').addEventListener("click", () => {
