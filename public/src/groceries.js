@@ -212,8 +212,35 @@ document.addEventListener("DOMContentLoaded", () => {
     // Clear the entire grocery list
     async function clearGroceryList() {
         let owner = localStorage.getItem("uid");
-        console.log("Clearing groceries for UID:", owner);
+        console.log("Adding pantry from groceries for UID:", owner);
+        
+        fetch('/getGroceries', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ owner: owner })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 
+        for (const item of data.groceries) {
+            fetch('/addToPantry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ owner: owner, ingredient: item })
+            }).catch(error => {
+                console.error('Error:', error);
+            });    
+        }
+        
         try {
             const response = await fetch(`/api/groceries/${owner}`, {
                 method: 'DELETE',
