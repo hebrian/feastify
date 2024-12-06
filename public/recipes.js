@@ -1,6 +1,7 @@
 async function fetchRecipes() {
-    const userId = sessionStorage.getItem('userId'); // Assuming userId is stored in sessionStorage
-    
+
+    const userId = localStorage.getItem("uid"); // Assuming userId is stored in sessionStorage
+    console.log(userId);
     if (!userId) {
         console.error('User ID is not available');
         return;

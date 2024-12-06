@@ -1,4 +1,24 @@
-document.getElementById('search-form').addEventListener('submit', async function (event) {
+function populateResults(recipes) {
+    const tableBody = document.querySelector('#resultsTable tbody');
+    tableBody.innerHTML = ''; // Clear any previous results
+
+    // Populate table with search results
+    recipes.forEach(recipe => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td><input type="checkbox" value="${recipe.id}"></td>
+                    <td>${recipe.title}</td>
+                    <td>${recipe.cuisines?.[0] || 'Unknown'}</td>
+                    <td>${recipe.servings || 'N/A'}</td>
+                    <td>${recipe.pricePerServing ? `$${(recipe.pricePerServing / 100).toFixed(2)}` : 'N/A'}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+}
+
+document.getElementById('search-form').addEventListener('submit', async function(event) {
     event.preventDefault(); // Prevent form submission
 
     const query = document.getElementById('search-query').value;
@@ -7,31 +27,33 @@ document.getElementById('search-form').addEventListener('submit', async function
         // Fetch recipes from the Spoonacular API via your backend
         const response = await fetch(`/api/spoonacular?query=${query}`);
         const recipes = await response.json();
-
-        const tableBody = document.querySelector('#resultsTable tbody');
-        tableBody.innerHTML = ''; // Clear any previous results
-
-        // Populate table with search results
-        recipes.forEach(recipe => {
-            const row = document.createElement('tr');
-
-            row.innerHTML = `
-                <td><input type="checkbox" value="${recipe.id}"></td>
-                <td>${recipe.title}</td>
-                <td>${recipe.cuisines?.[0] || 'Unknown'}</td>
-                <td>${recipe.servings || 'N/A'}</td>
-                <td>${recipe.pricePerServing ? `$${(recipe.pricePerServing / 100).toFixed(2)}` : 'N/A'}</td>
-            `;
-
-            tableBody.appendChild(row);
-        });
+        populateResults(recipes);
+        
     } catch (err) {
         console.error('Error fetching recipes:', err);
     }
 });
 
+document.getElementById('pantry-search').addEventListener('click', async function () {
+    let owner = localStorage.getItem("uid");
+    fetch('/findRecipesFromPantry', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ owner: owner })
+    })
+    .then(response => response.json())
+    .then(data => {
+        populateResults(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+})
+
 document.getElementById('save-button').addEventListener('click', async function () {
-    const userId = sessionStorage.getItem('userId'); // Reuse userId from sessionStorage
+    const userId = localStorage.getItem("uid");
 
     if (!userId) {
         alert('User ID is not available. Please log in again.');

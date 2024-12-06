@@ -3,6 +3,7 @@ let pantry = [];
 let searchPantry = [];
 
 function setPantryView(list) {
+    console.log(list);
     let results = document.getElementById('results');
     results.innerHTML = "";
     list.forEach((ingredient) => {
