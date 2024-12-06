@@ -1,5 +1,123 @@
+@import 'colors.css';
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+body,
+html {
+    padding: 0;
+    margin: 0;
+    background-color: var(--primary);
+}
+
+* {
+    color: var(--default-text-color);
+    font-family: "Poppins", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.secondary-button {
+    background-color: var(--secondary);
+    color: var(--default-text-color);
+    padding: 1vw;
+    max-height: 4em;
+    border: none;
+    border-radius: 5px;
+}
+
+.secondary-button:hover {
+    background-color: var(--secondary-lighter);
+    cursor: pointer;
+}
+
 .login-form {
     display: flex;
     flex-direction: column;
     width: 50%;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+}
+
+.sidebar {
+    flex-basis: 20%;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--primary-darker);
+}
+
+.sidebar-logo {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    /* align-items: center; */
+}
+
+.sidebar-logo-image {
+    width: 80%;
+}
+
+.sidebar-nav-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 5%;
+    padding-right: 5%;
+    background-color: var(--primary-darker);
+}
+
+.sidebar-nav-button p {
+    text-decoration: none;
+    color: white;
+}
+
+.sidebar-nav-button:hover {
+    background: var(--secondary);
+    cursor: pointer;
+}
+
+.content-container {
+    flex-basis: 80%;
+    background: var(--primary-lighter);
+    display: flex;
+    flex-direction: column;
+}
+
+.header-container {
+    flex-basis: 15%;
+    background-color: var(--primary-darker);
+    padding: 5%;
+    padding-left: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content {
+    padding: 10%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.recipe-blurb {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-basis: 33%;
+    align-items: center;
+}
+
+.recipe-blurb:hover {
+    cursor: pointer;
+}
+
+.recipe-blurb-img {
+    width: 80%;
 }

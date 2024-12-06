@@ -10,21 +10,30 @@ async function fetchRecipes() {
         const response = await fetch(`/api/recipes?userId=${userId}`); // Pass userId as a query parameter
         const recipes = await response.json();
 
-        const tableBody = document.querySelector('#recipesTable tbody');
-        tableBody.innerHTML = ''; // Clear existing rows
-
+        const blurbs = document.getElementById('blurbs');
+        console.log(recipes);
         recipes.forEach(recipe => {
-                    const row = document.createElement('tr');
 
-                    row.innerHTML = `
-                <td><a href="recipe.html?id=${recipe._id}">${recipe.name}</a></td>
-                <td>${recipe.meta.serves || 'N/A'}</td>
-                <td>${recipe.meta.cuisine || 'Unknown'}</td>
-                <td>${recipe.meta.cost ? `$${recipe.meta.cost.toFixed(2)}` : 'N/A'}</td>
-                <td>0</td> <!-- Default value for now -->
+            const blurb = document.createElement('div');
+            blurb.className = "recipe-blurb";
+            blurb.innerHTML = `
+                <img src="${recipe.image}" class="recipe-blurb-img">
+                <p class="recipe-blurb-name">${recipe.name}</p>
+            
             `;
+            blurb.onclick = () => {
+                window.location.href = `recipe.html?id=${recipe._id}`;
+            }
+            blurbs.appendChild(blurb);
 
-            tableBody.appendChild(row);
+            //         row.innerHTML = `
+            //     <td><a href="recipe.html?id=${recipe._id}">${recipe.name}</a></td>
+            //     <td>${recipe.meta.serves || 'N/A'}</td>
+            //     <td>${recipe.meta.cuisine || 'Unknown'}</td>
+            //     <td>${recipe.meta.cost ? `$${recipe.meta.cost.toFixed(2)}` : 'N/A'}</td>
+            //     <td>0</td> <!-- Default value for now -->
+            // `;
+
         });
     } catch (err) {
         console.error('Error fetching recipes:', err);

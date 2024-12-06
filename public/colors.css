@@ -1,0 +1,13 @@
+:root {
+    --primary: #101010;
+    --secondary: #F04747;
+    --contrast: 0.9;
+    --primary-darker: hsl(from var(--primary) h s calc(round(l * var(--contrast), 0.1)));
+    --primary-lighter: hsl(from var(--primary) h s calc(round(l / var(--contrast), 0.1)));
+    --secondary-darker: hsl(from var(--secondary) h s calc(round(l * var(--contrast), 0.1)));
+    --secondary-lighter: hsl(from var(--secondary) h s calc(round(l / var(--contrast), 0.1)));
+    --primary-lighter-darker: hsl(from var(--secondary) h s calc(round(l / 0.9, 0.1)));
+    --off-white: #f0f0f0;
+    --default-text-color: white;
+    --default-text-filter: invert(99%) sepia(0%) saturate(231%) hue-rotate(238deg) brightness(111%) contrast(100%);
+}

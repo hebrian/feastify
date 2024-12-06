@@ -194,6 +194,10 @@ async function addToGroceries(uid, ingredient) {
         const item = await collection.findOne(query);
         console.log(item);
         if (item === null) {
+            let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
+            ingredient.nutrition = nutrition;
+            ingredient.cost = cost;
+            ingredient.owner = uid;
             ingredient.owner = uid;
             console.log(ingredient);
             let res = await collection.insertOne(ingredient);
@@ -327,22 +331,20 @@ app.post('/findIngredients', async(req, res) => {
     const searchTerm = req.body.term;
     const ingredients = await getIngredients(searchTerm);
     res.json(ingredients);
+    ients);
 })
 
-app.post('/requestLogin', async(req, res) => {
-    const { email, password } = req.body;
-
-    const user = await getUserInfo(email);
-    if (user !== null) {
-        let valid = await bcrypt.compare(password, user.password);
-        if (valid) {
-            res.json({ success: true, uid: user._id })
-        } else {
-            res.json({ success: false, message: "Invalid username or password " });
-        }
-    } else {
-        res.json({ success: false, message: "No account exists with that email" });
+app.post('/findRecipesFromPantry', async(req, res) => {
+        let owner = req.body.owner;
+        const pantry = await getPantry(owner);
+        const recipes = await getRecipesFromPantry(pantry);
+        res.json(recipes);
+        res.json({ success: false, message: "Invalid username or password " });
     }
+}
+else {
+    res.json({ success: false, message: "No account exists with that email" });
+}
 
 });
 
