@@ -259,8 +259,8 @@ document.addEventListener("DOMContentLoaded", () => {
               alert("Failed to clear grocery list.");
             }
         } catch (error) {
-        console.error("Error during clearing grocery list:", error);
-        alert("An error occurred while moving items to the pantry.");
+            console.error("Error during clearing grocery list:", error);
+            alert("An error occurred while moving items to the pantry.");
         }
     }
 
