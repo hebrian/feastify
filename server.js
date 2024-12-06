@@ -223,6 +223,36 @@ async function getIngredients(searchTerm) {
     return res.data.results;
 }
 
+async function getRecipeByID(id) {
+    let query = `?apiKey=${api_key}`;
+    const res = await axios.get(`https://api.spoonacular.com/recipes/${id}/information${query}`);
+    return res.data;
+}
+
+async function getRecipesFromPantry(pantry) {
+    let query = '?includeIngredients=';
+    for (var i = 0; i < pantry.length; i++) {
+        query += pantry[i].name;
+        if (i < pantry.length - 1) {
+            query += ",+";
+        }
+    }
+    query += `&number=${10}&apiKey=${api_key}&sort=min-missing-ingredients`;
+    query = `https://api.spoonacular.com/recipes/complexSearch${query}`;
+    console.log(query);
+    const res = await axios.get(query);
+    console.log(res.data);
+    results = [];
+    for (var recipe of res.data.results) {
+        if (recipe.missedIngredientCount === 0) {
+            let doc = await getRecipeByID(recipe.id);
+            results.push(doc);
+        }
+    }
+    console.log(results);
+    return results;
+}
+
 async function updateGroceryItem(uid, ingredient, amount) {
     const client = new MongoClient(new_uri);
     try {
@@ -327,6 +357,13 @@ app.post('/findIngredients', async(req, res) => {
     const searchTerm = req.body.term;
     const ingredients = await getIngredients(searchTerm);
     res.json(ingredients);
+})
+
+app.post('/findRecipesFromPantry', async(req, res) => {
+    let owner = req.body.owner;
+    const pantry = await getPantry(owner);
+    const recipes = await getRecipesFromPantry(pantry);
+    res.json(recipes);
 })
 
 app.post('/requestLogin', async(req, res) => {
