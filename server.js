@@ -194,11 +194,11 @@ async function addToGroceries(uid, ingredient) {
         const item = await collection.findOne(query);
         console.log(item);
         if (item === null) {
+            let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
+            ingredient.nutrition = nutrition;
+            ingredient.cost = cost;
             ingredient.owner = uid;
-            console.log(ingredient);
-            let res = await collection.insertOne(ingredient);
-
-            console.log(res.insertedId);
+            await collection.insertOne(ingredient);
         } else {
             let amount = item.amount + ingredient.amount;
             await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });

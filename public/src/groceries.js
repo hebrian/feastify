@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("Manually added grocery item:", ingredient);
                 alert("Item added successfully!");
                 modal.style.display = "none"; // Close the modal
-                fetchGroceries(); // Refresh the grocery list
+                loadGroceries(); // Refresh the grocery list
             } else {
                 console.error("Failed to manually add grocery item:", await response.text());
                 alert("Failed to add item.");
@@ -110,6 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (response.ok) {
+                console.log(ingredient);
+
                 console.log("Grocery item added successfully");
             } else {
                 console.error("Failed to add grocery item:", await response.text());
@@ -117,6 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Error adding grocery item:", error);
         }
+        loadGroceries();
     }
 
 
@@ -214,46 +217,50 @@ document.addEventListener("DOMContentLoaded", () => {
         let owner = localStorage.getItem("uid");
         console.log("Adding pantry from groceries for UID:", owner);
         
-        fetch('/getGroceries', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ owner: owner })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-
-        for (const item of data.groceries) {
-            fetch('/addToPantry', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ owner: owner, ingredient: item })
-            }).catch(error => {
-                console.error('Error:', error);
-            });    
-        }
-        
         try {
-            const response = await fetch(`/api/groceries/${owner}`, {
-                method: 'DELETE',
+            // Step 1: Fetch all grocery items
+            const response = await fetch(`/getGroceries`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ owner: owner }),
             });
-
-            if (response.ok) {
-                console.log("Grocery list cleared");
-                updateTable([]); // Clear the UI
+        
+            if (!response.ok) {
+              console.error("Failed to fetch grocery items:", await response.text());
+              alert("Failed to fetch grocery items.");
+              return;
+            }
+        
+            const data = await response.json();
+            console.log(data);
+        
+            // Step 2: Add each grocery item to the pantry
+            for (const item of data.groceries) {
+              await fetch('/addToPantry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ owner: owner, ingredient: item }),
+              }).catch(error => {
+                console.error("Error adding to pantry:", error);
+              });
+            }
+        
+            // Step 3: Clear all grocery items
+            const deleteResponse = await fetch(`/api/groceries/${owner}`, {
+              method: 'DELETE',
+            });
+        
+            if (deleteResponse.ok) {
+              console.log("Grocery list cleared successfully.");
+              alert("All items have been moved to the pantry.");
+              updateTable([]); // Clear the UI
             } else {
-                console.error("Failed to clear groceries:", await response.text());
+              console.error("Failed to clear grocery items:", await deleteResponse.text());
+              alert("Failed to clear grocery list.");
             }
         } catch (error) {
-            console.error("Error clearing groceries:", error);
+        console.error("Error during clearing grocery list:", error);
+        alert("An error occurred while moving items to the pantry.");
         }
     }
 
