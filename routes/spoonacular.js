@@ -36,7 +36,7 @@ router.get('/api/spoonacular', async (req, res) => {
 
 // Route to save selected recipes to MongoDB
 router.post('/api/saveRecipes', async (req, res) => {
-    const { userId, recipeIds } = req.body; // Extract userId and recipeIds from the request body
+    const { userId, recipeIds } = req.body;
 
     if (!userId) {
         return res.status(400).json({ error: 'User ID is required.' });
@@ -47,22 +47,56 @@ router.post('/api/saveRecipes', async (req, res) => {
     }
 
     try {
-        // Fetch detailed recipe information for each ID from Spoonacular
         const recipesToSave = [];
         for (const id of recipeIds) {
             const apiUrl = `https://api.spoonacular.com/recipes/${id}/information?apiKey=${process.env.spoon_api_key}`;
             const response = await axios.get(apiUrl);
             const recipe = response.data;
 
+            // Process and convert ingredients to have separate amount and unit fields
+            const processedIngredients = await Promise.all(
+                recipe.extendedIngredients.map(async (ingredient) => {
+                    let convertedAmount = ingredient.amount;
+                    let unit = ingredient.unit.toLowerCase();
+
+                    // Convert to grams if not already in grams
+                    if (unit !== 'g' && unit !== 'grams') {
+                        try {
+                            const conversionUrl = `https://api.spoonacular.com/recipes/convert?apiKey=${process.env.spoon_api_key}`;
+                            const conversionResponse = await axios.get(conversionUrl, {
+                                params: {
+                                    ingredientName: ingredient.name,
+                                    sourceAmount: ingredient.amount,
+                                    sourceUnit: unit,
+                                    targetUnit: 'grams',
+                                },
+                            });
+                            convertedAmount = conversionResponse.data.targetAmount || ingredient.amount;
+                            unit = 'grams'; // Update unit to grams
+                        } catch (conversionError) {
+                            console.warn(
+                                `Conversion failed for ingredient: ${ingredient.name}. Keeping original unit.`
+                            );
+                        }
+                    }
+
+                    // Ensure amount is a number (int or float)
+                    convertedAmount = parseFloat(convertedAmount);
+
+                    return {
+                        name: ingredient.name,
+                        spoonacular_id: ingredient.id,
+                        amount: convertedAmount, // Store as a number
+                        unit: unit, // Separate field for unit
+                    };
+                })
+            );
+
             recipesToSave.push({
                 name: recipe.title,
-                ingredients: recipe.extendedIngredients.map(ingredient => ({
-                    name: ingredient.name,
-                    spoonacular_id: ingredient.id,
-                    amount: `${ingredient.amount} ${ingredient.unit}`,
-                })),
+                ingredients: processedIngredients,
                 steps: recipe.analyzedInstructions.length > 0
-                    ? recipe.analyzedInstructions[0].steps.map(step => step.step)
+                    ? recipe.analyzedInstructions[0].steps.map((step) => step.step)
                     : [],
                 meta: {
                     serves: recipe.servings || 0,
@@ -70,9 +104,9 @@ router.post('/api/saveRecipes', async (req, res) => {
                     cuisine: recipe.cuisines.length > 0 ? recipe.cuisines[0] : 'Unknown',
                     cost: recipe.pricePerServing ? recipe.pricePerServing / 100 : 0,
                 },
-                image: recipe.image || '', // Save image URL
-                imageType: recipe.imageType || '', // Save image type
-                userId, // Use userId from the request body
+                image: recipe.image || '',
+                imageType: recipe.imageType || '',
+                userId,
             });
         }
 
