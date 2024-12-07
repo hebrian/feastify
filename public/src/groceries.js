@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const API_KEY = '9623bac1fe144fb1a5cf881f085f66d1';
 
+    /*
     const manualAddButton = document.getElementById("manual-add-button");
     const modal = document.getElementById("manual-add-modal");
     const closeModal = document.getElementById("close-modal");
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const ingredient = { name, amount, owner };
 
         try {
-            const response = await fetch(`/addToGroceries`, {
+            const response = await fetch(`/addToGroceriesManual`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ owner: owner, ingredient: ingredient })
@@ -66,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("An error occurred while adding the item.");
         }
     });
-
+*/
 
     async function loadGroceries() {
         let owner = localStorage.getItem("uid");
@@ -196,11 +197,17 @@ document.addEventListener("DOMContentLoaded", () => {
             input.addEventListener('change', async() => {
                 const id = input.dataset.id;
                 const amount = input.value;
-                await fetch(`/groceries/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount })
-                });
+                if (amount <= 0) {
+                    removeGrocery(id);
+                }
+                else {
+                    await fetch(`/api/groceries/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount, owner: localStorage.getItem("uid") })
+                    });
+                }
+                
                 loadGroceries();
             });
         });
@@ -236,13 +243,14 @@ document.addEventListener("DOMContentLoaded", () => {
         
             // Step 2: Add each grocery item to the pantry
             for (const item of data.groceries) {
-              await fetch('/addToPantry', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ owner: owner, ingredient: item }),
-              }).catch(error => {
-                console.error("Error adding to pantry:", error);
-              });
+                const { _id, ...itemWithoutId } = item;
+                await fetch('/addToPantry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ owner: owner, ingredient: itemWithoutId }),
+                }).catch(error => {
+                    console.error("Error adding to pantry:", error);
+                });
             }
         
             // Step 3: Clear all grocery items
