@@ -1,4 +1,5 @@
 async function fetchRecipes() {
+
     const userId = localStorage.getItem("uid"); // Assuming userId is stored in sessionStorage
     console.log(userId);
     if (!userId) {
@@ -7,7 +8,7 @@ async function fetchRecipes() {
     }
 
     try {
-        const response = await fetch(`/api/recipes?userId=${userId}`); // Pass userId as a query parameter
+        const response = await fetch(`/api/recipes?userId=${userId}`);
         const recipes = await response.json();
 
         const blurbs = document.getElementById('blurbs');
@@ -35,9 +36,14 @@ async function fetchRecipes() {
             // `;
 
         });
+
+
+
     } catch (err) {
         console.error('Error fetching recipes:', err);
     }
 }
+
+
 
 window.onload = fetchRecipes;

@@ -4,7 +4,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const bcrypt = require("bcrypt");
 const axios = require("axios");
-
+const crypto = require('crypto');
 
 const app = express();
 const port = 3000;
@@ -234,11 +234,39 @@ async function addToGroceries(uid, ingredient) {
         const item = await collection.findOne(query);
         console.log(item);
         if (item === null) {
+            let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
+            ingredient.nutrition = nutrition;
+            ingredient.cost = cost;
             ingredient.owner = uid;
-            console.log(ingredient);
-            let res = await collection.insertOne(ingredient);
+            await collection.insertOne(ingredient);
+        } else {
+            let amount = item.amount + ingredient.amount;
+            await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
+        }
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+    }
+}
 
-            console.log(res.insertedId);
+async function addToGroceriesManual(uid, ingredient) {
+    const client = new MongoClient(new_uri);
+    console.log("adding ingredient to gro db");
+    try {
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("groceries");
+        const query = { owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }
+        const item = await collection.findOne(query);
+        console.log(item);
+        if (item === null) {
+            ingredient.owner = uid;
+            const hash = crypto.createHash('sha256').update(ingredient.name).digest('hex');
+            const spoonacularId = -parseInt(hash, 16);
+            ingredient.spoonacular_id = spoonacularId;
+            await collection.insertOne(ingredient);
         } else {
             let amount = item.amount + ingredient.amount;
             await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
@@ -263,13 +291,43 @@ async function getIngredients(searchTerm) {
     return res.data.results;
 }
 
-async function updateGroceryItem(uid, ingredient, amount) {
+async function getRecipeByID(id) {
+    let query = `?apiKey=${api_key}`;
+    const res = await axios.get(`https://api.spoonacular.com/recipes/${id}/information${query}`);
+    return res.data;
+}
+
+async function getRecipesFromPantry(pantry) {
+    let query = '?includeIngredients=';
+    for (var i = 0; i < pantry.length; i++) {
+        query += pantry[i].name;
+        if (i < pantry.length - 1) {
+            query += ",+";
+        }
+    }
+    query += `&number=${10}&apiKey=${api_key}&sort=min-missing-ingredients`;
+    query = `https://api.spoonacular.com/recipes/complexSearch${query}`;
+    console.log(query);
+    const res = await axios.get(query);
+    console.log(res.data);
+    results = [];
+    for (var recipe of res.data.results) {
+        if (recipe.missedIngredientCount === 0) {
+            let doc = await getRecipeByID(recipe.id);
+            results.push(doc);
+        }
+    }
+    console.log(results);
+    return results;
+}
+
+async function updateGroceryItem(uid, ingredient_id, new_amount) {
     const client = new MongoClient(new_uri);
     try {
         await client.connect();
         const dbName = client.db("feastify");
         const collection = dbName.collection("groceries");
-        await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount } });
+        await collection.updateOne({ owner: uid, _id: new ObjectId(ingredient_id) }, { $set: { amount: new_amount } });
     } catch (error) {
         console.error("error");
         throw error;
@@ -379,6 +437,13 @@ app.post('/findIngredients', async(req, res) => {
     res.json(ingredients);
 })
 
+app.post('/findRecipesFromPantry', async(req, res) => {
+    let owner = req.body.owner;
+    const pantry = await getPantry(owner);
+    const recipes = await getRecipesFromPantry(pantry);
+    res.json(recipes);
+})
+
 app.post('/requestLogin', async(req, res) => {
     const { email, password } = req.body;
 
@@ -428,6 +493,12 @@ app.post('/addToGroceries', async(req, res) => {
     res.sendStatus(200);
 })
 
+app.post('/addToGroceriesManual', async(req, res) => {
+    console.log("ay");
+    await addToGroceriesManual(req.body.owner, req.body.ingredient);
+    res.sendStatus(200);
+})
+
 app.post('/getGroceries', async(req, res) => {
     const groceries = await getGroceries(req.body.owner);
     res.json({ groceries });
@@ -438,7 +509,8 @@ app.put('/api/groceries/:id', async(req, res) => {
     try {
         const { id } = req.params;
         const { amount } = req.body;
-        await updateGroceryItem(id, amount);
+        const uid = req.body.owner;
+        await updateGroceryItem(uid, id, amount);
         res.send("Item updated successfully");
     } catch (error) {
         console.error(error);
