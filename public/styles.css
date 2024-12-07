@@ -117,7 +117,7 @@ html {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    flex-basis: 35%;
+    flex-basis: 33%;
     width: 33%;
     flex-shrink: 0;
     align-items: center;
@@ -129,6 +129,10 @@ html {
 
 .recipe-blurb-img {
     width: 80%;
+}
+
+.recipe-blurb-name {
+    text-align: center;
 }
 
 .views-radio {
