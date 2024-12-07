@@ -1,5 +1,327 @@
+@import 'colors.css';
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+body,
+html {
+    padding: 0;
+    margin: 0;
+    background-color: var(--primary);
+}
+
+* {
+    color: var(--default-text-color);
+    font-family: "Poppins", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.secondary-button {
+    background-color: var(--secondary);
+    color: var(--default-text-color);
+    padding: 1vw;
+    max-height: 4em;
+    border: none;
+    border-radius: 5px;
+}
+
+.secondary-button:hover {
+    background-color: var(--secondary-lighter);
+    cursor: pointer;
+}
+
 .login-form {
     display: flex;
     flex-direction: column;
     width: 50%;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+}
+
+.sidebar {
+    flex-basis: 20%;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--primary-darker);
+}
+
+.sidebar-logo {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    /* align-items: center; */
+}
+
+.sidebar-logo-image {
+    width: 80%;
+}
+
+.sidebar-nav-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 5%;
+    padding-right: 5%;
+    background-color: var(--primary-darker);
+}
+
+.sidebar-nav-button p {
+    text-decoration: none;
+    color: white;
+}
+
+.sidebar-nav-button:hover {
+    background: var(--secondary);
+    cursor: pointer;
+}
+
+.content-container {
+    flex-basis: 80%;
+    background: var(--primary-lighter);
+    display: flex;
+    flex-direction: column;
+}
+
+.header-container {
+    flex-basis: 15%;
+    background-color: var(--primary-darker);
+    padding: 5%;
+    padding-left: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content {
+    padding: 10%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    /* Align items to the start with no gaps */
+    align-items: flex-start;
+}
+
+.content-column {
+    flex-direction: column;
+}
+
+.recipe-blurb {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-basis: 33%;
+    width: 33%;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.recipe-blurb:hover {
+    cursor: pointer;
+}
+
+.recipe-blurb-img {
+    width: 80%;
+}
+
+.recipe-blurb-name {
+    text-align: center;
+}
+
+.views-radio {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.views-form div {
+    display: flex;
+    flex-direction: row;
+    margin-top: 0.5rem;
+    justify-content: center;
+}
+
+.views-form {
+    display: flex;
+    flex-direction: row;
+}
+
+.views-form .views-input {
+    clip: rect(0 0 0 0);
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.views-label .views-span {
+    display: block;
+    cursor: pointer;
+    background-color: var(--primary);
+    padding: 0.375em .75em;
+    position: relative;
+    margin-left: .0625em;
+    box-shadow: 0 0 0 0.0625em var(--secondary);
+    letter-spacing: .05em;
+    color: var(--secondary);
+    text-align: center;
+    transition: background-color .5s ease;
+}
+
+.views-label .views-span-checked {
+    display: block;
+    cursor: pointer;
+    background-color: var(--secondary);
+    padding: 0.375em .75em;
+    position: relative;
+    margin-left: .0625em;
+    box-shadow: 0 0 0 0.0625em var(--secondary);
+    letter-spacing: .05em;
+    color: var(--primary);
+    text-align: center;
+    transition: background-color .5s ease;
+}
+
+.views-label:first-child span {
+    border-radius: .375em 0 0 .375em;
+}
+
+.views-label:last-child span {
+    border-radius: 0 .375em .375em 0;
+}
+
+.views-form-container {
+    margin-top: 5%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+.ingredient-blurb {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-basis: 21%;
+    width: 21%;
+    margin: 2%;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 120px;
+    background-color: var(--primary-lighter-darker);
+}
+
+.ingredient-blurb p {
+    width: fit-content;
+    max-width: 100px;
+    text-align: center;
+    font-size: 75%;
+}
+
+.search-input-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 3%;
+}
+
+.search-form {
+    width: 75%;
+    display: flex;
+    gap: 2%;
+}
+
+.content-pantry {
+    padding: 2% 10% 5% 10%;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--secondary-darker);
+    transition: color .5s ease, border-color .5s ease;
+}
+
+.search-input::placeholder {
+    color: var(--default-text-color);
+    transition: color .5s ease;
+}
+
+.search-input:focus::placeholder {
+    color: var(--secondary);
+}
+
+.search-input {
+    flex: 1;
+    flex-direction: row;
+    color: var(--default-text-color);
+    text-align: left;
+    padding: 0.25em;
+    min-width: 16vw;
+    /* max-width: 35vw; */
+    border-radius: 1vh;
+    border-style: none none solid none;
+    border-color: gray;
+    background-color: var(--primary-lighter);
+    font-size: 3vmin;
+}
+
+.crud-buttons {
+    width: 50%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.crud-button {
+    display: block;
+    background-color: var(--primary);
+    padding: 0.375em .75em;
+    position: relative;
+    margin-left: .0625em;
+    box-shadow: 0 0 0 0.0625em var(--secondary);
+    letter-spacing: .05em;
+    color: var(--secondary);
+    text-align: center;
+    transition: background-color .5s ease;
+}
+
+.crud-button.button {
+    cursor: pointer;
+}
+
+.crud-button.amount {
+    color: var(--default-text-color);
+}
+
+.crud-button.button:hover {
+    background-color: var(--secondary);
+    color: var(--primary);
+}
+
+.crud-button.plus {
+    border-radius: 0 .375em .375em 0;
+}
+
+.crud-button.add {
+    border-radius: 0.375em;
+    font-size: 75%;
+}
+
+.crud-button.minus {
+    border-radius: .375em 0 0 .375em;
+}
+
+.hide {
+    display: none;
 }

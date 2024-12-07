@@ -169,10 +169,50 @@ async function addToPantry(uid, ingredient) {
             ingredient.owner = uid;
             let res = await collection.insertOne(ingredient);
         } else {
-            let amount = item.amount + ingredient.amount;
-            const result = await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
 
+            let amount = item.amount + ingredient.amount;
+            const result = await collection.updateOne({ owner: uid, spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
         }
+
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+
+    }
+}
+
+async function updatePantry(uid, ingredient, newAmount) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("pantry");
+        const query = { owner: uid, spoonacular_id: ingredient.spoonacular_id }
+        const result = await collection.updateOne(query, { $set: { amount: newAmount } });
+        console.log("Matched: ", result.matchedCount);
+
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+
+    }
+}
+
+async function deleteFromPantry(uid, ingredient) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("pantry");
+        const query = { owner: uid, spoonacular_id: ingredient.spoonacular_id }
+        const result = await collection.deleteOne(query);
+        console.log("Deleted: ", result.deletedCount);
 
     } catch (error) {
         console.error("error");
@@ -373,6 +413,16 @@ app.post('/getUser', async(req, res) => {
 
 app.post('/addToPantry', async(req, res) => {
     await addToPantry(req.body.owner, req.body.ingredient);
+    res.sendStatus(200);
+})
+
+app.post('/updatePantry', async(req, res) => {
+    await updatePantry(req.body.owner, req.body.ingredient, req.body.newAmount);
+    res.sendStatus(200);
+})
+
+app.post('/deleteFromPantry', async(req, res) => {
+    await deleteFromPantry(req.body.owner, req.body.ingredient);
     res.sendStatus(200);
 })
 

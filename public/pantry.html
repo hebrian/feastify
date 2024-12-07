@@ -9,33 +9,60 @@
 </head>
 
 <body>
-    <a href="recipes.html">Home</a>
-    <div class="root-container">
-        <label className="views-label">
-            <input class="views-radio" type="radio" name="radio" value="pantry" checked="true"/>
-            <span class="views-span-checked">My Pantry</span>
-        </label>
-        <label className="views-label">
-            <input class="views-radio" type="radio" name="radio" value="search"/>
-            <span class="views-span-checked">Add Items</span>
-        </label>
-        <div class="search-input-container">
-            <form class="search-form" id="pantry-search-form" action="">
-                <input type="text" placeholder="Search Items" name="search" id="search" />
-                <button type="submit">Search</button>
-            </form>
-        </div>
-        <div id="pantry-container">
-            <ul id="pantry">
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <img class="sidebar-logo-image" src="src/logo.png">
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='groceries.html'">
+                <p>Groceries</p>
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='pantry.html'">
+                <p>Pantry</p>
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='recipes.html'">
+                <p>Recipes</p>
+            </div>
+            <div class="sidebar-nav-button" id="logout-button">
+                <p>Logout</p>
+            </div>
 
-            </ul>
         </div>
-        <div id="results-container" style="display:hidden">
-            <ul id="results">
+        <div class="content-container">
+            <div class="header-container">
+                <h1>Pantry</h1>
 
-            </ul>
+
+            </div>
+            <div class="views-form-container">
+                <div class="views-form">
+                    <label class="views-label">
+                        <input class="views-radio" type="radio" name="radio" value="pantry" checked="true"/>
+                        <span id="pantry-view" class="views-span-checked">My Pantry</span>
+                    </label>
+                    <label class="views-label">
+                        <input class="views-radio" type="radio" name="radio" value="search"/>
+                        <span id="search-view" class="views-span">Add Items</span>
+                    </label>
+                </div>
+            </div>
+            <div class="search-input-container">
+                <form class="search-form" id="pantry-search-form" action="">
+                    <input class="search-input" type="text" placeholder="Search Items" name="search" id="search" />
+                    <button class="secondary-button" id="search-button" type="submit">Search</button>
+                </form>
+            </div>
+            <div class="content content-pantry" id="pantry-container">
+                <p>Loading...</p>
+            </div>
+            <div class="content content-pantry" id="results-container">
+
+            </div>
+
+
         </div>
     </div>
+
 
     <script src="src/pantry.js"></script>
 </body>
