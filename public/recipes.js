@@ -71,12 +71,56 @@ async function removeRecipe(recipeId) {
 
 async function exportIngredientsToGrocery(recipeId) {
     try {
-        const response = await fetch(`/api/recipes/recipe?recipeID=${recipeId}`);
-        const recipe = await response.json();
+        // Fetch the recipe details
+        const recipeResponse = await fetch(`/api/recipes/recipe?recipeID=${recipeId}`);
+        const recipe = await recipeResponse.json();
+        console.log('Recipe Ingredients:', recipe.ingredients);
 
-        // Store ingredients in localStorage for now
-        localStorage.setItem('ingredients', JSON.stringify(recipe.ingredients));
-        alert('Ingredients exported to grocery list');
+        // Fetch pantry and grocery list
+        const owner = localStorage.getItem('uid');
+        const pantryResponse = await fetch('/getPantry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ owner })
+        });
+        const groceryResponse = await fetch('/getGroceries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ owner })
+        });
+
+        const pantryData = await pantryResponse.json();
+        const groceryData = await groceryResponse.json();
+
+        console.log('Pantry Items:', pantryData.pantry);
+        console.log('Grocery Items:', groceryData.groceries);
+
+        const pantryItems = pantryData.pantry.map(item => item.name.toLowerCase());
+        const groceryItems = groceryData.groceries.map(item => item.name.toLowerCase());
+
+        // Filter out ingredients already in pantry or grocery list
+        const missingIngredients = recipe.ingredients.filter(ingredient =>
+            !pantryItems.includes(ingredient.name.toLowerCase()) &&
+            !groceryItems.includes(ingredient.name.toLowerCase())
+        );
+
+        console.log('Missing Ingredients:', missingIngredients);
+
+        // Add missing ingredients to the grocery list using the server API
+        for (const ingredient of missingIngredients) {
+            ingredient.spoonacular_id = ingredient.spoonacular_id || ''; // Ensure ID exists
+            ingredient.amount = ingredient.amount || 1; // Assign default amount if not present
+            delete ingredient._id; // Remove the ID field
+            
+            await fetch('/addToGroceries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ owner, ingredient })
+            });
+            console.log(`Added to groceries: ${ingredient.name} with amount: ${ingredient.amount}`);
+        }
+
+        alert(`Exported ${missingIngredients.length} new ingredients to the grocery list.`);
         window.location.href = 'groceries.html'; // Redirect to grocery page
     } catch (err) {
         console.error('Error exporting ingredients:', err);

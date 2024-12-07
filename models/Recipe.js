@@ -5,9 +5,10 @@ const RecipeSchema = new mongoose.Schema({
     name: { type: String, required: true }, // Recipe name
     ingredients: [
         {
-            name: String, // Ingredient name
-            spoonacular_id: String, // ID from Spoonacular API
-            amount: String, // e.g., "2 cups"
+            name: { type: String, required: true }, // Ingredient name
+            spoonacular_id: { type: String, required: true }, // ID from Spoonacular API
+            amount: { type: Number, required: true }, // Amount as a number
+            unit: { type: String, required: true }, // Unit of measurement (e.g., "grams")
         }
     ],
     steps: [String], // Array of steps for the recipe
