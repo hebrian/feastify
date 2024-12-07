@@ -169,10 +169,50 @@ async function addToPantry(uid, ingredient) {
             ingredient.owner = uid;
             let res = await collection.insertOne(ingredient);
         } else {
-            let amount = item.amount + ingredient.amount;
-            const result = await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
 
+            let amount = item.amount + ingredient.amount;
+            const result = await collection.updateOne({ owner: uid, spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
         }
+
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+
+    }
+}
+
+async function updatePantry(uid, ingredient, newAmount) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("pantry");
+        const query = { owner: uid, spoonacular_id: ingredient.spoonacular_id }
+        const result = await collection.updateOne(query, { $set: { amount: newAmount } });
+        console.log("Matched: ", result.matchedCount);
+
+    } catch (error) {
+        console.error("error");
+        throw error;
+    } finally {
+        await client.close();
+
+    }
+}
+
+async function deleteFromPantry(uid, ingredient) {
+    const client = new MongoClient(new_uri);
+    try {
+        await client.connect();
+
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("pantry");
+        const query = { owner: uid, spoonacular_id: ingredient.spoonacular_id }
+        const result = await collection.deleteOne(query);
+        console.log("Deleted: ", result.deletedCount);
 
     } catch (error) {
         console.error("error");
@@ -194,10 +234,6 @@ async function addToGroceries(uid, ingredient) {
         const item = await collection.findOne(query);
         console.log(item);
         if (item === null) {
-            let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
-            ingredient.nutrition = nutrition;
-            ingredient.cost = cost;
-            ingredient.owner = uid;
             ingredient.owner = uid;
             console.log(ingredient);
             let res = await collection.insertOne(ingredient);
@@ -322,6 +358,16 @@ app.post('/addToPantry', async(req, res) => {
     res.sendStatus(200);
 })
 
+app.post('/updatePantry', async(req, res) => {
+    await updatePantry(req.body.owner, req.body.ingredient, req.body.newAmount);
+    res.sendStatus(200);
+})
+
+app.post('/deleteFromPantry', async(req, res) => {
+    await deleteFromPantry(req.body.owner, req.body.ingredient);
+    res.sendStatus(200);
+})
+
 app.post('/getPantry', async(req, res) => {
     const pantry = await getPantry(req.body.owner);
     res.json({ pantry });
@@ -331,20 +377,22 @@ app.post('/findIngredients', async(req, res) => {
     const searchTerm = req.body.term;
     const ingredients = await getIngredients(searchTerm);
     res.json(ingredients);
-    ients);
 })
 
-app.post('/findRecipesFromPantry', async(req, res) => {
-        let owner = req.body.owner;
-        const pantry = await getPantry(owner);
-        const recipes = await getRecipesFromPantry(pantry);
-        res.json(recipes);
-        res.json({ success: false, message: "Invalid username or password " });
+app.post('/requestLogin', async(req, res) => {
+    const { email, password } = req.body;
+
+    const user = await getUserInfo(email);
+    if (user !== null) {
+        let valid = await bcrypt.compare(password, user.password);
+        if (valid) {
+            res.json({ success: true, uid: user._id })
+        } else {
+            res.json({ success: false, message: "Invalid username or password " });
+        }
+    } else {
+        res.json({ success: false, message: "No account exists with that email" });
     }
-}
-else {
-    res.json({ success: false, message: "No account exists with that email" });
-}
 
 });
 

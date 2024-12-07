@@ -12,8 +12,7 @@ async function fetchRecipe() {
 
         const recipeContainer = document.getElementById('recipe');
         recipeContainer.innerHTML = ''; // Clear existing rows
-        const header = document.createElement("div");
-        header.className = "recipe-header";
+        const header = document.getElementById("recipe-header");
         header.innerHTML = `
             <h1>${recipe.name}</h1>
             <ul>
@@ -46,8 +45,6 @@ async function fetchRecipe() {
         });
         steps.appendChild(stepsList);
 
-
-        recipeContainer.appendChild(header);
         recipeContainer.appendChild(ingredients);
         recipeContainer.appendChild(steps);
 
