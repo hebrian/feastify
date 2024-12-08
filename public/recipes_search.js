@@ -78,6 +78,8 @@ document.getElementById('save-button').addEventListener('click', async function 
 
         if (response.ok) {
             alert('Recipes saved successfully!');
+            // Redirect to recipes.html
+            window.location.href = 'recipes.html';
         } else {
             alert('Failed to save recipes.');
         }
