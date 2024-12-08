@@ -106,7 +106,7 @@ async function fetchRecipe() {
         let ingredientsList = document.createElement("ul");
         recipe.ingredients.forEach(element => {
             let item = document.createElement("li");
-            item.innerText = element.name;
+            item.innerText = Math.round(element.amount) + "g " + element.name;
             ingredientsList.appendChild(item);
         });
         ingredients.appendChild(ingredientsList);
@@ -133,6 +133,7 @@ async function fetchRecipe() {
 
         let exportBtn = document.getElementById("export-btn");
         exportBtn.addEventListener('click', async event => {
+            console.log("exporting");
             await exportIngredientsToGrocery(recipeId);
         });
 

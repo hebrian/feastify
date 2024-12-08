@@ -4,7 +4,7 @@ const Recipe = require('../models/Recipe'); // Ensure this points to your Recipe
 const router = express.Router();
 
 // Route to search recipes via Spoonacular
-router.get('/api/spoonacular', async (req, res) => {
+router.get('/api/spoonacular', async(req, res) => {
     const query = req.query.query; // Get the search query from the URL
     const spoonApiKey = process.env.spoon_api_key;
 
@@ -35,7 +35,7 @@ router.get('/api/spoonacular', async (req, res) => {
 });
 
 // Route to save selected recipes to MongoDB
-router.post('/api/saveRecipes', async (req, res) => {
+router.post('/api/saveRecipes', async(req, res) => {
     const { userId, recipeIds } = req.body;
 
     if (!userId) {
@@ -55,10 +55,9 @@ router.post('/api/saveRecipes', async (req, res) => {
 
             // Process and convert ingredients to have separate amount and unit fields
             const processedIngredients = await Promise.all(
-                recipe.extendedIngredients.map(async (ingredient) => {
+                recipe.extendedIngredients.map(async(ingredient) => {
                     let convertedAmount = ingredient.amount;
                     let unit = ingredient.unit.toLowerCase();
-
                     // Convert to grams if not already in grams
                     if (unit !== 'g' && unit !== 'grams') {
                         try {
@@ -95,9 +94,8 @@ router.post('/api/saveRecipes', async (req, res) => {
             recipesToSave.push({
                 name: recipe.title,
                 ingredients: processedIngredients,
-                steps: recipe.analyzedInstructions.length > 0
-                    ? recipe.analyzedInstructions[0].steps.map((step) => step.step)
-                    : [],
+                steps: recipe.analyzedInstructions.length > 0 ?
+                    recipe.analyzedInstructions[0].steps.map((step) => step.step) : [],
                 meta: {
                     serves: recipe.servings || 0,
                     nutrition: recipe.nutrition || {},
@@ -111,8 +109,8 @@ router.post('/api/saveRecipes', async (req, res) => {
         }
 
         // Save the recipes to MongoDB
-        await Recipe.insertMany(recipesToSave);
-
+        let resp = await Recipe.insertMany(recipesToSave);
+        console.log(resp);
         res.status(200).json({ success: true });
     } catch (error) {
         console.error('Error saving recipes:', error.message);
