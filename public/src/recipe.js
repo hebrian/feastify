@@ -152,7 +152,7 @@ async function fetchRecipe() {
         });
         let exportButton = document.createElement("button");
         exportButton.className = "secondary-button";
-        removeButton.innerText = "Add to Cart";
+        exportButton.innerText = "Add to Cart";
         exportButton.addEventListener('click', async event => {
             console.log("exporting");
             try {
