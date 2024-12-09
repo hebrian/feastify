@@ -1,5 +1,6 @@
 function populateResults(recipes) {
     const blurbs = document.getElementById('blurbs');
+    blurbs.innerHTML = "";
     console.log(recipes);
     recipes.forEach(recipe => {
 
