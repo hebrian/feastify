@@ -52,5 +52,13 @@
 
     <script src="recipes_search.js"></script>
 </body>
+<script>
+    document.getElementById('logout-button').addEventListener("click", () => {
+        console.log("hello");
+        localStorage.removeItem("uid");
+        localStorage.removeItem("isAuthenticated");
+        window.location.href = "/";
+    })
+</script>
 
 </html>

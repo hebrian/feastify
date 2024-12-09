@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const Recipe = require('../models/Recipe'); // Ensure this points to your Recipe model
 const router = express.Router();
+const { MongoClient, ObjectId } = require("mongodb");
 
 async function processIngredients(recipe) {
     const processedIngredients = await Promise.all(
@@ -57,8 +58,6 @@ router.get('/api/spoonacular', async(req, res) => {
         const apiUrl = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${spoonApiKey}&query=${query}&number=3&addRecipeInformation=true&addRecipeInstructions=true&fillIngredients=true`;
         const response = await axios.get(apiUrl);
 
-
-        console.log(response.data.results[0]);
         // Send the results directly to the front-end
         const resultsWithImages = await Promise.all(response.data.results.map(async recipe => {
             return {
@@ -84,7 +83,6 @@ router.get('/api/spoonacular', async(req, res) => {
 });
 
 async function processIngredients(recipe) {
-    console.log(recipe);
     const processedIngredients = await Promise.all(
         recipe.ingredients.map(async(ingredient) => {
             let convertedAmount = ingredient.amount;
@@ -152,13 +150,18 @@ router.post('/api/saveRecipes', async(req, res) => {
                 },
                 image: recipe.image || '',
                 imageType: recipe.imageType || '',
-                userId,
+                userId: new ObjectId(userId),
                 spoonacular_id: recipe.id,
             });
         }
 
         // Save the recipes to MongoDB
-        let resp = await Recipe.insertMany(recipesToSave);
+        const client = new MongoClient(process.env.mongo_uri);
+        await client.connect();
+        const dbName = client.db("feastify");
+        const collection = dbName.collection("recipes");
+
+        const resp = await collection.insertMany(recipesToSave);
         console.log(resp);
         res.status(200).json({ success: true });
     } catch (error) {
