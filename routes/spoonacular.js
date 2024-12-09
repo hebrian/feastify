@@ -55,7 +55,7 @@ router.get('/api/spoonacular', async(req, res) => {
     }
 
     try {
-        const apiUrl = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${spoonApiKey}&query=${query}&number=3&addRecipeInformation=true&addRecipeInstructions=true&fillIngredients=true`;
+        const apiUrl = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${spoonApiKey}&query=${query}&number=9&addRecipeInformation=true&addRecipeInstructions=true&fillIngredients=true`;
         const response = await axios.get(apiUrl);
 
         // Send the results directly to the front-end

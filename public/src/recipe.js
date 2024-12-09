@@ -125,11 +125,13 @@ async function fetchRecipe() {
         saveButton.className = "secondary-button";
         saveButton.innerText = "Save Recipe";
         saveButton.addEventListener('click', async event => {
+            saveButton.innerText = "Saving..."
             try {
                 await saveRecipe(spoon_recipe);
             } catch (error) {
                 console.error(error);
             }
+            saveButton.innerText = "Save Recipe";
         });
         buttons.appendChild(saveButton);
     } else {
