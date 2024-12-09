@@ -15,9 +15,7 @@ document.getElementById('login-form').addEventListener('submit', function(event)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                localStorage.setItem("uid", data.uid);
-                localStorage.setItem("isAuthenticated", true);
-                window.location.href = '/recipes';
+                window.location.href = '/login.html';
             } else {
                 document.getElementById('error-message').style.display = 'block';
                 document.getElementById('error-message').innerText = data.message;
