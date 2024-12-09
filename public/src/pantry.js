@@ -88,8 +88,8 @@ function ingredientBlurb(ingredient, type) {
         plus.classList.add("add");
         plus.classList.add("button");
         plus.innerText = 'Add';
-        plus.onclick = () => {
-            addToPantry(ingredient);
+        plus.onclick = async() => {
+            await addToPantry(ingredient);
             loadPantry();
         }
         buttons.appendChild(plus);
@@ -179,6 +179,7 @@ async function addToPantry(ingredient) {
 }
 
 async function loadPantry() {
+    console.log("loading pantry");
     let owner = localStorage.getItem("uid");
     console.log(owner);
     fetch('/getPantry', {
@@ -209,7 +210,7 @@ function toggleView(v) {
     if (v === "pantry") {
         document.getElementById("results-container").classList.add("hide");
         document.getElementById("pantry-container").classList.remove("hide");
-
+        loadPantry();
 
         document.getElementById("search").placeholder = "Search Pantry";
         document.getElementById("pantry-view").className = "views-span-checked";

@@ -80,8 +80,8 @@ function ingredientBlurb(ingredient, type) {
         plus.classList.add("add");
         plus.classList.add("button");
         plus.innerText = 'Add';
-        plus.onclick = () => {
-            addToGroceries(ingredient);
+        plus.onclick = async() => {
+            await addToGroceries(ingredient);
             loadGroceries();
         }
         buttons.appendChild(plus);
@@ -273,7 +273,7 @@ function toggleView(v) {
     if (v === "grocery") {
         document.getElementById("results-container").classList.add("hide");
         document.getElementById("grocery-container").classList.remove("hide");
-
+        loadGroceries();
 
         document.getElementById("search").placeholder = "Search Grocery List";
         document.getElementById("grocery-view").className = "views-span-checked";
