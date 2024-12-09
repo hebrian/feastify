@@ -14,15 +14,16 @@
             <div class="sidebar-logo">
                 <img class="sidebar-logo-image" src="src/logo.png">
             </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='recipes.html'">
+                <p>Recipes</p>
+            </div>
             <div class="sidebar-nav-button" onclick="window.location.href='groceries.html'">
                 <p>Groceries</p>
             </div>
             <div class="sidebar-nav-button" onclick="window.location.href='pantry.html'">
                 <p>Pantry</p>
             </div>
-            <div class="sidebar-nav-button" onclick="window.location.href='recipes.html'">
-                <p>Recipes</p>
-            </div>
+
             <div class="sidebar-nav-button" id="logout-button">
                 <p>Logout</p>
             </div>
@@ -31,10 +32,9 @@
         <div class="content-container">
             <div class="header-container">
                 <div id="recipe-header">Loading...</div>
-                <div>
+                <div id="buttons">
 
-                    <button class="secondary-button" id="export-btn">Add to Cart</button>
-                    <button class="secondary-button" id="remove-btn">Delete</button>
+
                 </div>
 
             </div>
@@ -43,9 +43,36 @@
                 <script src="src/recipe.js"></script>
 
             </div>
+            <div class="popup-container hide" id="popup">
+                <div class="popup">
+                    <p>Added to Grocery List!</p>
+                    <div class="popup-buttons">
+                        <button class="secondary-button" onclick="document.getElementById('popup').classList.add('hide')">OK</button>
+                        <button class="secondary-button" onclick="window.location.href='groceries.html'">View Grocery List</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="popup-container hide" id="popup-save">
+                <div class="popup">
+                    <p>Added to Recipes!</p>
+                    <div class="popup-buttons">
+                        <button class="secondary-button" onclick="document.getElementById('popup-save').classList.add('hide')">OK</button>
+                        <button class="secondary-button" onclick="window.location.href='recipes.html'">View Recipes</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
 </body>
+<script>
+    document.getElementById('logout-button').addEventListener("click", () => {
+        console.log("hello");
+        localStorage.removeItem("uid");
+        localStorage.removeItem("isAuthenticated");
+        window.location.href = "/";
+    })
+</script>
 
 </html>

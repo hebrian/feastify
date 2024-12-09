@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feastify - Recipes</title>
+    <title>Feastify - Pantry</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -14,14 +14,11 @@
             <div class="sidebar-logo">
                 <img class="sidebar-logo-image" src="src/logo.png">
             </div>
-            <div class="sidebar-nav-button" onclick="window.location.href='groceries.html'">
-                <p>Groceries</p>
-            </div>
-            <div class="sidebar-nav-button" onclick="window.location.href='pantry.html'">
-                <p>Pantry</p>
-            </div>
             <div class="sidebar-nav-button" onclick="window.location.href='recipes.html'">
                 <p>Recipes</p>
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='groceries.html'">
+                <p>Groceries</p>
             </div>
             <div class="sidebar-nav-button" id="logout-button">
                 <p>Logout</p>
@@ -66,5 +63,13 @@
 
     <script src="src/pantry.js"></script>
 </body>
+<script>
+    document.getElementById('logout-button').addEventListener("click", () => {
+        console.log("hello");
+        localStorage.removeItem("uid");
+        localStorage.removeItem("isAuthenticated");
+        window.location.href = "/";
+    })
+</script>
 
 </html>

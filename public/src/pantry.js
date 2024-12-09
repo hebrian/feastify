@@ -29,7 +29,7 @@ function deleteIngredient(ingredient) {
     });
 }
 
-function ingredientBlurb(ingredient) {
+function ingredientBlurb(ingredient, type) {
     const blurb = document.createElement('div');
     blurb.className = "ingredient-blurb";
     let name = document.createElement("p");
@@ -38,10 +38,14 @@ function ingredientBlurb(ingredient) {
     const buttons = document.createElement('div');
     buttons.className = "crud-buttons";
 
-    if (view === "pantry") {
+    if (type === "pantry") {
 
         const amount = document.createElement("span");
-        amount.innerText = ingredient.amount;
+        var wps = ingredient.nutrition.weightPerServing.amount;
+        if (wps === 0 || wps === undefined) {
+            wps = 1;
+        }
+        amount.innerText = Math.ceil(ingredient.amount / wps);
         amount.classList.add("crud-button");
         amount.classList.add("amount");
 
@@ -86,6 +90,7 @@ function ingredientBlurb(ingredient) {
         plus.innerText = 'Add';
         plus.onclick = () => {
             addToPantry(ingredient);
+            loadPantry();
         }
         buttons.appendChild(plus);
     }
@@ -101,7 +106,7 @@ function setPantryView(list) {
     let results = document.getElementById('pantry-container');
     results.innerHTML = "";
     list.forEach((ingredient) => {
-        const blurb = ingredientBlurb(ingredient);
+        const blurb = ingredientBlurb(ingredient, "pantry");
         if (blurb !== null) {
             results.appendChild(blurb);
         }
@@ -119,16 +124,6 @@ document.getElementById('search').addEventListener('input', () => {
     }
 });
 
-
-function handlePantryForm(event) {
-    event.preventDefault();
-    const term = document.getElementById('search').value;
-    const pattern = new RegExp(term, "gi");
-    searchPantry = pantry.filter((item) =>
-        item.name.match(pattern)
-    );
-    setPantryView(searchPantry);
-}
 
 function handleAddForm(event) {
     event.preventDefault();
@@ -149,7 +144,7 @@ function handleAddForm(event) {
             results.innerHTML = "";
             console.log(data);
             data.forEach((ingredient) => {
-                const blurb = ingredientBlurb(ingredient)
+                const blurb = ingredientBlurb(ingredient, "search")
 
                 results.appendChild(blurb);
             })
@@ -160,12 +155,7 @@ function handleAddForm(event) {
 }
 
 document.getElementById('pantry-search-form').addEventListener('submit', function(event) {
-
-    if (view === "pantry") {
-        handlePantryForm(event);
-    } else {
-        handleAddForm(event);
-    }
+    handleAddForm(event);
 });
 
 async function addToPantry(ingredient) {
@@ -219,8 +209,7 @@ function toggleView(v) {
     if (v === "pantry") {
         document.getElementById("results-container").classList.add("hide");
         document.getElementById("pantry-container").classList.remove("hide");
-        document.getElementById("pantry-container").innerHTML = '<p>Loading...</p>';
-        loadPantry();
+
 
         document.getElementById("search").placeholder = "Search Pantry";
         document.getElementById("pantry-view").className = "views-span-checked";
@@ -244,6 +233,7 @@ function toggleView(v) {
     }
 }
 
+loadPantry();
 toggleView("pantry");
 
 viewRadios = document.getElementsByClassName("views-radio");

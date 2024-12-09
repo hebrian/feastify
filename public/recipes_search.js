@@ -1,21 +1,30 @@
 function populateResults(recipes) {
-    const tableBody = document.querySelector('#resultsTable tbody');
-    tableBody.innerHTML = ''; // Clear any previous results
-
-    // Populate table with search results
+    const blurbs = document.getElementById('blurbs');
+    console.log(recipes);
     recipes.forEach(recipe => {
-                const row = document.createElement('tr');
 
-                row.innerHTML = `
-                    <td><input type="checkbox" value="${recipe.id}"></td>
-                    <td>${recipe.title}</td>
-                    <td>${recipe.cuisines?.[0] || 'Unknown'}</td>
-                    <td>${recipe.servings || 'N/A'}</td>
-                    <td>${recipe.pricePerServing ? `$${(recipe.pricePerServing / 100).toFixed(2)}` : 'N/A'}</td>
-                `;
+        const blurb = document.createElement('div');
+        blurb.className = "recipe-blurb";
+        blurb.innerHTML = `
+            <img src="${recipe.image}" class="recipe-blurb-img">
+            <p class="recipe-blurb-name">${recipe.title}</p>
+        
+        `;
+        blurb.onclick = () => {
+            localStorage.setItem("previewRecipe", JSON.stringify(recipe));
+            window.location.href = `recipe.html`;
+        }
+        blurbs.appendChild(blurb);
 
-                tableBody.appendChild(row);
-            });
+        //         row.innerHTML = `
+        //     <td><a href="recipe.html?id=${recipe._id}">${recipe.name}</a></td>
+        //     <td>${recipe.meta.serves || 'N/A'}</td>
+        //     <td>${recipe.meta.cuisine || 'Unknown'}</td>
+        //     <td>${recipe.meta.cost ? `$${recipe.meta.cost.toFixed(2)}` : 'N/A'}</td>
+        //     <td>0</td> <!-- Default value for now -->
+        // `;
+
+    });
 }
 
 document.getElementById('search-form').addEventListener('submit', async function(event) {
@@ -28,60 +37,26 @@ document.getElementById('search-form').addEventListener('submit', async function
         const response = await fetch(`/api/spoonacular?query=${query}`);
         const recipes = await response.json();
         populateResults(recipes);
-        
+
     } catch (err) {
         console.error('Error fetching recipes:', err);
     }
 });
 
-document.getElementById('pantry-search').addEventListener('click', async function () {
+document.getElementById('pantry-search').addEventListener('click', async function() {
     let owner = localStorage.getItem("uid");
     fetch('/findRecipesFromPantry', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ owner: owner })
-    })
-    .then(response => response.json())
-    .then(data => {
-        populateResults(data);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-})
-
-document.getElementById('save-button').addEventListener('click', async function () {
-    const userId = localStorage.getItem("uid");
-
-    if (!userId) {
-        alert('User ID is not available. Please log in again.');
-        return;
-    }
-
-    const selectedRecipeIds = Array.from(document.querySelectorAll('#resultsTable input[type="checkbox"]:checked'))
-        .map(input => input.value);
-
-    if (selectedRecipeIds.length === 0) {
-        alert('Please select at least one recipe to save.');
-        return;
-    }
-
-    try {
-        // Send selected recipe IDs to the backend along with the userId
-        const response = await fetch('/api/saveRecipes', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userId, recipeIds: selectedRecipeIds }),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ owner: owner })
+        })
+        .then(response => response.json())
+        .then(data => {
+            populateResults(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
-
-        if (response.ok) {
-            alert('Recipes saved successfully!');
-        } else {
-            alert('Failed to save recipes.');
-        }
-    } catch (err) {
-        console.error('Error saving recipes:', err);
-    }
-});
+})
