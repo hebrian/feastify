@@ -1,281 +1,310 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const searchBar = document.getElementById("search-bar");
-    const searchButton = document.getElementById("search-button");
-    const searchResults = document.getElementById("search-results");
-    const groceryTable = document.getElementById("grocery-table").querySelector("tbody");
-    const shoppedButton = document.getElementById("shopped-button");
+const searchButton = document.getElementById("search-button");
+const searchResults = document.getElementById("search-results");
+const shoppedButton = document.getElementById("shopped-button");
 
-    const API_KEY = '9623bac1fe144fb1a5cf881f085f66d1';
+let view = "grocery";
+let groceries = [];
+let searchList = [];
+let previousFindTerm = "";
 
-    /*
-    const manualAddButton = document.getElementById("manual-add-button");
-    const modal = document.getElementById("manual-add-modal");
-    const closeModal = document.getElementById("close-modal");
-    const manualAddForm = document.getElementById("manual-add-form");
-
-    // Open the modal
-    manualAddButton.addEventListener("click", () => {
-        modal.style.display = "block";
+function updateIngredient(ingredient, amount) {
+    let owner = localStorage.getItem("uid")
+    fetch('/updateGroceryItem', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uid: owner, id: ingredient._id, amount: amount })
+    }).catch(error => {
+        console.error('Error:', error);
     });
+}
 
-    // Close the modal
-    closeModal.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
 
-    // Close the modal when clicking outside of it
-    window.addEventListener("click", (event) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
+function ingredientBlurb(ingredient, type) {
+    const blurb = document.createElement('div');
+    blurb.className = "ingredient-blurb";
+    let name = document.createElement("p");
+    name.innerText = ingredient.name;
+    blurb.appendChild(name);
+    const buttons = document.createElement('div');
+    buttons.className = "crud-buttons";
+
+    if (type === "grocery") {
+
+        const amount = document.createElement("span");
+        var wps = ingredient.nutrition.weightPerServing.amount;
+        if (wps === 0 || wps === undefined) {
+            wps = 1;
         }
-    });
+        amount.innerText = Math.ceil(ingredient.amount / wps);
+        amount.classList.add("crud-button");
+        amount.classList.add("amount");
 
-    // Handle manual add form submission
-    manualAddForm.addEventListener("submit", async(event) => {
-        event.preventDefault();
+        const plus = document.createElement("span");
+        plus.classList.add("crud-button");
+        plus.classList.add("plus");
+        plus.classList.add("button");
+        plus.innerText = '+';
+        plus.onclick = () => {
+            let newAmount = parseInt(amount.innerText) + 1;
+            amount.innerText = newAmount
+            updateIngredient(ingredient, newAmount);
+        }
 
-        const name = document.getElementById("manual-name").value.trim();
-        const amount = parseInt(document.getElementById("manual-amount").value, 10);
+        const minus = document.createElement("span");
+        minus.classList.add("crud-button");
+        minus.classList.add("minus");
+        minus.classList.add("button");
+        minus.innerText = '-';
+        minus.onclick = () => {
 
-        if (!name || amount <= 0) {
-            alert("Please provide valid name and amount.");
+            let newAmount = parseInt(amount.innerText) - 1;
+            if (newAmount === 0) {
+                removeGrocery(ingredient._id);
+                blurb.remove();
+            }
+            amount.innerText = newAmount;
+
+            updateIngredient(ingredient, newAmount);
+        }
+
+        buttons.appendChild(minus);
+        buttons.appendChild(amount);
+        buttons.appendChild(plus);
+
+
+    } else {
+        const plus = document.createElement("span");
+        plus.classList.add("crud-button");
+        plus.classList.add("add");
+        plus.classList.add("button");
+        plus.innerText = 'Add';
+        plus.onclick = () => {
+            addToGroceries(ingredient);
+            loadGroceries();
+        }
+        buttons.appendChild(plus);
+    }
+    blurb.appendChild(buttons);
+
+    return blurb;
+}
+
+function setGroceryView(list) {
+    console.log(list);
+    let results = document.getElementById('grocery-container');
+    results.innerHTML = "";
+    list.forEach((ingredient) => {
+        const blurb = ingredientBlurb(ingredient, "grocery");
+        if (blurb !== null) {
+            results.appendChild(blurb);
+        }
+    })
+}
+
+async function loadGroceries() {
+    let owner = localStorage.getItem("uid");
+    console.log("Loading groceries for UID:", owner);
+
+    fetch('/getGroceries', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ owner: owner })
+        })
+        .then(response => response.json())
+        .then(data => {
+            groceries = data.groceries;
+            groceries.sort((a, b) => {
+                return a.name.localeCompare(b.name);
+            });
+            setGroceryView(groceries);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+
+// Add grocery item to the database and update the table
+async function addToGroceries(ingredient) {
+    // Assign spoonacular ID to match the database logic
+    ingredient.spoonacular_id = ingredient.id;
+    delete ingredient.id; // Avoid conflict with MongoDB's _id
+    delete ingredient.image; // Simplify storage (optional)
+    ingredient.amount = 1; // Default amount
+
+    // Fetch UID from localStorage or relevant source
+    let owner = localStorage.getItem("uid");
+    console.log("Owner UID:", owner);
+
+    try {
+        const response = await fetch('/addToGroceries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ owner: owner, ingredient: ingredient })
+        });
+
+        if (response.ok) {
+            console.log(ingredient);
+
+            console.log("Grocery item added successfully");
+        } else {
+            console.error("Failed to add grocery item:", await response.text());
+        }
+    } catch (error) {
+        console.error("Error adding grocery item:", error);
+    }
+    loadGroceries();
+}
+
+document.getElementById('search').addEventListener('input', () => {
+    if (view === "grocery") {
+        const term = document.getElementById('search').value;
+        const pattern = new RegExp(term, "gi");
+        searchList = groceries.filter((item) =>
+            item.name.match(pattern)
+        );
+        setGroceryView(searchList);
+    }
+});
+
+
+const removeGrocery = async(id) => {
+    await fetch(`/api/groceries/delete/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner: localStorage.getItem("uid") }) });
+    loadGroceries();
+};
+
+// Clear the entire grocery list
+async function clearGroceryList() {
+    let owner = localStorage.getItem("uid");
+    console.log("Adding pantry from groceries for UID:", owner);
+
+    try {
+        // Step 1: Fetch all grocery items
+        const response = await fetch(`/getGroceries`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ owner: owner }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch grocery items:", await response.text());
+
             return;
         }
 
-        const owner = localStorage.getItem("uid");
-        console.log("Owner UID:", owner);
-        const ingredient = { name, amount, owner };
+        const data = await response.json();
+        console.log(data);
 
-        try {
-            const response = await fetch(`/addToGroceriesManual`, {
+        // Step 2: Add each grocery item to the pantry
+        for (const item of data.groceries) {
+            const { _id, ...itemWithoutId } = item;
+            await fetch('/addToPantry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ owner: owner, ingredient: ingredient })
+                body: JSON.stringify({ owner: owner, ingredient: itemWithoutId }),
+            }).catch(error => {
+                console.error("Error adding to pantry:", error);
             });
-
-            if (response.ok) {
-                console.log("Manually added grocery item:", ingredient);
-                alert("Item added successfully!");
-                modal.style.display = "none"; // Close the modal
-                loadGroceries(); // Refresh the grocery list
-            } else {
-                console.error("Failed to manually add grocery item:", await response.text());
-                alert("Failed to add item.");
-            }
-        } catch (error) {
-            console.error("Error adding grocery item manually:", error);
-            alert("An error occurred while adding the item.");
         }
-    });
-*/
 
-    async function loadGroceries() {
-        let owner = localStorage.getItem("uid");
-        console.log("Loading groceries for UID:", owner);
+        // Step 3: Clear all grocery items
+        const deleteResponse = await fetch(`/api/groceries/${owner}`, {
+            method: 'DELETE',
+        });
 
-        fetch('/getGroceries', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ owner: owner })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                updateTable(data.groceries);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
+        if (deleteResponse.ok) {
+            let popup = document.getElementById('popup');
+            popup.classList.remove("hide");
+            loadGroceries();
+        } else {
+            console.error("Failed to clear grocery items:", await deleteResponse.text());
 
-
-    // Add grocery item to the database and update the table
-    async function addToGroceries(ingredient) {
-        // Assign spoonacular ID to match the database logic
-        ingredient.spoonacular_id = ingredient.id;
-        delete ingredient.id; // Avoid conflict with MongoDB's _id
-        delete ingredient.image; // Simplify storage (optional)
-        ingredient.amount = 1; // Default amount
-
-        // Fetch UID from localStorage or relevant source
-        let owner = localStorage.getItem("uid");
-        console.log("Owner UID:", owner);
-
-        try {
-            const response = await fetch('/addToGroceries', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ owner: owner, ingredient: ingredient })
-            });
-
-            if (response.ok) {
-                console.log(ingredient);
-
-                console.log("Grocery item added successfully");
-            } else {
-                console.error("Failed to add grocery item:", await response.text());
-            }
-        } catch (error) {
-            console.error("Error adding grocery item:", error);
         }
-        loadGroceries();
+    } catch (error) {
+        console.error("Error during clearing grocery list:", error);
     }
+}
 
-
-    // Display search results from Spoonacular API
-    const displaySearchResults = (results) => {
-        searchResults.innerHTML = ''; // Clear previous results
-        results.forEach((result) => {
-            const resultDiv = document.createElement('div');
-            resultDiv.style.marginBottom = '20px';
-
-            resultDiv.innerHTML = `
-        <img src="https://spoonacular.com/cdn/ingredients_100x100/${result.image}" alt="${result.name}" style="width: 100px; height: 100px;" />
-        <p>${result.name}</p>
-        <button data-name="${result.name}">Add</button>
-      `;
-
-            // Add event listener to the "Add" button
-            resultDiv.querySelector('button').addEventListener('click', () => {
-                addToGroceries(result, 1);
-            });
-
-            searchResults.appendChild(resultDiv);
-        });
-    };
-
-    // Search for grocery items using Spoonacular API
-    searchButton.addEventListener('click', async(event) => {
-        event.preventDefault();
-
-        const term = searchBar.value;
-
-        fetch('/findIngredients', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ term: term })
-            })
-            .then(response => response.json())
-            .then(data => {
-                displaySearchResults(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    });
-
-    // Update the table with grocery items
-    const updateTable = (groceries) => {
-        groceryTable.innerHTML = '';
-        groceries.forEach(({ _id, name, amount }) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-        <td>${name}</td>
-        <td>
-          <input type="number" value="${amount}" min="1" data-id="${_id}" />
-        </td>
-        <td>
-          <button data-id="${_id}" class="delete-button">Delete</button>
-        </td>
-      `;
-            groceryTable.appendChild(row);
-        });
-
-        // Add event listeners for delete and update
-        document.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', () => {
-                removeGrocery(button.dataset.id);
-                console.log(button.dataset)
-            });
-        });
-
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.addEventListener('change', async() => {
-                const id = input.dataset.id;
-                const amount = input.value;
-                if (amount <= 0) {
-                    removeGrocery(id);
-                }
-                else {
-                    await fetch(`/api/groceries/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount, owner: localStorage.getItem("uid") })
-                    });
-                }
-                
-                loadGroceries();
-            });
-        });
-    };
-
-    // Remove grocery item
-    const removeGrocery = async(id) => {
-        await fetch(`/api/groceries/delete/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner: localStorage.getItem("uid") }) });
-        loadGroceries();
-    };
-
-    // Clear the entire grocery list
-    async function clearGroceryList() {
-        let owner = localStorage.getItem("uid");
-        console.log("Adding pantry from groceries for UID:", owner);
-        
-        try {
-            // Step 1: Fetch all grocery items
-            const response = await fetch(`/getGroceries`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ owner: owner }),
-            });
-        
-            if (!response.ok) {
-              console.error("Failed to fetch grocery items:", await response.text());
-              alert("Failed to fetch grocery items.");
-              return;
-            }
-        
-            const data = await response.json();
-            console.log(data);
-        
-            // Step 2: Add each grocery item to the pantry
-            for (const item of data.groceries) {
-                const { _id, ...itemWithoutId } = item;
-                await fetch('/addToPantry', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ owner: owner, ingredient: itemWithoutId }),
-                }).catch(error => {
-                    console.error("Error adding to pantry:", error);
-                });
-            }
-        
-            // Step 3: Clear all grocery items
-            const deleteResponse = await fetch(`/api/groceries/${owner}`, {
-              method: 'DELETE',
-            });
-        
-            if (deleteResponse.ok) {
-              console.log("Grocery list cleared successfully.");
-              alert("All items have been moved to the pantry.");
-              updateTable([]); // Clear the UI
-            } else {
-              console.error("Failed to clear grocery items:", await deleteResponse.text());
-              alert("Failed to clear grocery list.");
-            }
-        } catch (error) {
-            console.error("Error during clearing grocery list:", error);
-            alert("An error occurred while moving items to the pantry.");
-        }
-    }
-
-
-    // Event listener for "Shopped" button
-    shoppedButton.addEventListener('click', clearGroceryList);
-
-    // Initial load
-    loadGroceries();
+document.getElementById('grocery-search-form').addEventListener('submit', function(event) {
+    handleAddForm(event);
 });
+
+function handleAddForm(event) {
+    event.preventDefault();
+
+    const term = document.getElementById('search').value;
+    previousFindTerm = term;
+
+    fetch('/findIngredients', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ term: term })
+        })
+        .then(response => response.json())
+        .then(data => {
+            let results = document.getElementById('results-container');
+            results.innerHTML = "";
+            console.log(data);
+            data.forEach((ingredient) => {
+                const blurb = ingredientBlurb(ingredient, "search")
+
+                results.appendChild(blurb);
+            })
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+// Event listener for "Shopped" button
+shoppedButton.addEventListener('click', clearGroceryList);
+
+// Initial load
+function toggleView(v) {
+    console.log(previousFindTerm);
+    document.getElementById('search').value = "";
+    view = v;
+    if (v === "grocery") {
+        document.getElementById("results-container").classList.add("hide");
+        document.getElementById("grocery-container").classList.remove("hide");
+
+
+        document.getElementById("search").placeholder = "Search Grocery List";
+        document.getElementById("grocery-view").className = "views-span-checked";
+        document.getElementById("search-view").className = "views-span";
+
+        document.getElementById("search-button").classList.add("hide");
+
+        document.getElementById("search").classList.remove("search-input-find-view");
+
+    } else {
+        document.getElementById("results-container").classList.remove("hide");
+        document.getElementById("grocery-container").classList.add("hide");
+
+        document.getElementById("search").placeholder = "Find Items";
+        document.getElementById("search").value = previousFindTerm;
+        document.getElementById("search-view").className = "views-span-checked";
+        document.getElementById("grocery-view").className = "views-span";
+
+        document.getElementById("search-button").classList.remove("hide");
+        document.getElementById("search").classList.add("search-input-find-view");
+    }
+}
+
+loadGroceries();
+toggleView("grocery");
+
+viewRadios = document.getElementsByClassName("views-radio");
+console.log(viewRadios);
+Array.from(viewRadios).forEach((radio) => {
+    radio.addEventListener("change", (event) => {
+        console.log(event.target.value);
+        toggleView(event.target.value);
+    })
+})

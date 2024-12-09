@@ -9,30 +9,47 @@
 </head>
 
 <body>
-    <a href="recipes.html" id="return-link">Back to Recipes</a>
-    <h1>Search for Recipes</h1>
-    <form id="search-form">
-        <input type="text" id="search-query" placeholder="Enter recipe keyword" required>
-        <button type="submit">Search</button>
-        <button id="pantry-search">What Can I Make?</button>
-    </form>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <img class="sidebar-logo-image" src="src/logo.png">
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='recipes.html'">
+                <p>Recipes</p>
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='groceries.html'">
+                <p>Groceries</p>
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='pantry.html'">
+                <p>Pantry</p>
+            </div>
+            <div class="sidebar-nav-button" id="logout-button">
+                <p>Logout</p>
+            </div>
 
-    <table id="resultsTable" border="1">
-        <thead>
-            <tr>
-                <th>Select</th>
-                <th>Recipe Name</th>
-                <th>Cuisine</th>
-                <th>Servings</th>
-                <th>Cost</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Search results will be populated here -->
-        </tbody>
-    </table>
+        </div>
+        <div class="content-container">
+            <div class="header-container">
+                <h1>Find a Recipe</h1>
+                <button class="secondary-button" id="pantry-search">What Can I Make?</button>
 
-    <button id="save-button">Save Selected Recipes</button>
+            </div>
+
+            <div class="search-input-container">
+                <form class="search-form" id="search-form" action="">
+                    <input class="search-input" type="text" placeholder="Search Recipes" name="search" id="search-query" />
+                    <button class="secondary-button" id="search-button" type="submit">Search</button>
+                </form>
+            </div>
+
+            <div class="content" id="blurbs">
+
+            </div>
+
+
+        </div>
+    </div>
+
 
     <script src="recipes_search.js"></script>
 </body>

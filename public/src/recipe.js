@@ -5,7 +5,7 @@ async function removeRecipe(recipeId) {
         });
 
         if (response.ok) {
-            alert('Recipe removed successfully');
+            console.log('Recipe removed successfully');
         } else {
             console.error('Failed to remove recipe');
         }
@@ -65,84 +65,157 @@ async function exportIngredientsToGrocery(recipeId) {
             console.log(`Added to groceries: ${ingredient.name} with amount: ${ingredient.amount}`);
         }
 
-        alert(`Exported ${missingIngredients.length} new ingredients to the grocery list.`);
-        window.location.href = 'groceries.html'; // Redirect to grocery page
+        let popup = document.getElementById('popup');
+        popup.classList.remove("hide");
+
     } catch (err) {
         console.error('Error exporting ingredients:', err);
     }
 }
 
+async function saveRecipe(recipe) {
+    const userId = localStorage.getItem("uid");
 
+    if (!userId) {
+        alert('User ID is not available. Please log in again.');
+        return;
+    }
+
+
+    try {
+        // Send selected recipe IDs to the backend along with the userId
+        const response = await fetch('/api/saveRecipes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, recipes: [recipe] }),
+        });
+
+        if (response.ok) {
+            let popup = document.getElementById('popup-save');
+            popup.classList.remove("hide");
+        } else {
+            alert('Failed to save recipes.');
+        }
+    } catch (err) {
+        console.error('Error saving recipes:', err);
+    }
+
+}
 
 
 async function fetchRecipe() {
     const url = new URL(window.location.href);
     const params = new URLSearchParams(url.search);
     const recipeId = params.get('id');
+    const buttons = document.getElementById('buttons');
+    var recipe = {}
+    var spoon_recipe = {}
+    if (recipeId === null) {
 
-    console.log(recipeId);
+        spoon_recipe = JSON.parse(localStorage.getItem("previewRecipe"));
+        console.log(spoon_recipe);
+        recipe.name = spoon_recipe.title;
+        recipe.meta = {
+            serves: spoon_recipe.servings || 0,
+            cost: spoon_recipe.pricePerServing ? spoon_recipe.pricePerServing / 100 : 0,
+        }
+        recipe.ingredients = spoon_recipe.ingredients;
+        recipe.steps = spoon_recipe.steps;
+        let saveButton = document.createElement("button");
+        saveButton.className = "secondary-button";
+        saveButton.innerText = "Save Recipe";
+        saveButton.addEventListener('click', async event => {
+            try {
+                await saveRecipe(spoon_recipe);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+        buttons.appendChild(saveButton);
+    } else {
+        try {
+            const response = await fetch(`/api/recipes/recipe?recipeID=${recipeId}`); // Pass userId as a query parameter
+            recipe = await response.json();
+        } catch (err) {
+            console.error('Error fetching recipes:', err);
+        }
+        let removeButton = document.createElement("button");
+        removeButton.className = "secondary-button";
+        removeButton.innerText = "Delete";
+        removeButton.addEventListener('click', async event => {
+            try {
+                await removeRecipe(recipeId);
+            } catch (error) {
+                console.error(error);
+            }
+            window.location.href = "/recipes";
+        });
+        let exportButton = document.createElement("button");
+        exportButton.className = "secondary-button";
+        removeButton.innerText = "Add to Cart";
+        exportButton.addEventListener('click', async event => {
+            console.log("exporting");
+            try {
+                await exportIngredientsToGrocery(recipeId);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+        buttons.appendChild(removeButton);
+        buttons.appendChild(exportButton);
+
+    }
 
 
-    try {
-        const response = await fetch(`/api/recipes/recipe?recipeID=${recipeId}`); // Pass userId as a query parameter
-        const recipe = await response.json();
 
-        const recipeContainer = document.getElementById('recipe');
-        recipeContainer.innerHTML = ''; // Clear existing rows
-        const header = document.getElementById("recipe-header");
-        header.innerHTML = `
+
+    const recipeContainer = document.getElementById('recipe');
+    recipeContainer.innerHTML = ''; // Clear existing rows
+    const header = document.getElementById("recipe-header");
+    header.innerHTML = `
             <h1>${recipe.name}</h1>
             <ul>
                 <li>Serves: ${recipe.meta.serves}</li>
-                <li>Cost: $${recipe.meta.cost.toFixed(2)}</li>
+                <li>Cost: $${recipe.meta.cost.toFixed(2)}/Serving</li>
             </ul>
         `;
-        const ingredients = document.createElement("div");
-        const steps = document.createElement("div");
+    const ingredients = document.createElement("div");
+    const steps = document.createElement("div");
 
-        let ingredientsHeader = document.createElement("h2");
-        ingredientsHeader.innerText = "Ingredients";
-        ingredients.appendChild(ingredientsHeader);
-        let ingredientsList = document.createElement("ul");
-        recipe.ingredients.forEach(element => {
-            let item = document.createElement("li");
+    let ingredientsHeader = document.createElement("h2");
+    ingredientsHeader.innerText = "Ingredients";
+    ingredients.appendChild(ingredientsHeader);
+    let ingredientsList = document.createElement("ul");
+    recipe.ingredients.forEach(element => {
+        let item = document.createElement("li");
+        if (recipeId === null) {
+            item.innerText = element.name;
+        } else {
             item.innerText = Math.round(element.amount) + "g " + element.name;
-            ingredientsList.appendChild(item);
-        });
-        ingredients.appendChild(ingredientsList);
+        }
+        ingredientsList.appendChild(item);
+    });
+    ingredients.appendChild(ingredientsList);
 
-        let stepsHeader = document.createElement("h2");
-        stepsHeader.innerText = "Steps";
-        steps.appendChild(stepsHeader);
-        let stepsList = document.createElement("ol");
-        recipe.steps.forEach(element => {
-            let item = document.createElement("li");
-            item.innerText = element;
-            stepsList.appendChild(item);
-        });
-        steps.appendChild(stepsList);
+    let stepsHeader = document.createElement("h2");
+    stepsHeader.innerText = "Steps";
+    steps.appendChild(stepsHeader);
+    let stepsList = document.createElement("ol");
+    recipe.steps.forEach(element => {
+        let item = document.createElement("li");
+        item.innerText = element;
+        stepsList.appendChild(item);
+    });
+    steps.appendChild(stepsList);
 
-        recipeContainer.appendChild(ingredients);
-        recipeContainer.appendChild(steps);
-
-        let removeBtn = document.getElementById("remove-btn");
-        removeBtn.addEventListener('click', async event => {
-            await removeRecipe(recipeId);
-            window.location.href = "/recipes";
-        });
-
-        let exportBtn = document.getElementById("export-btn");
-        exportBtn.addEventListener('click', async event => {
-            console.log("exporting");
-            await exportIngredientsToGrocery(recipeId);
-        });
+    recipeContainer.appendChild(ingredients);
+    recipeContainer.appendChild(steps);
 
 
 
 
-    } catch (err) {
-        console.error('Error fetching recipes:', err);
-    }
+
+
 }
 
 window.onload = fetchRecipe;

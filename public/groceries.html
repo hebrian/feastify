@@ -1,91 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feastify - Grocery List</title>
+    <title>Feastify - Recipes</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Basic styling for modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 30%;
-            border-radius: 10px;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-        }
-    </style>
 </head>
+
 <body>
-    <a href="recipes.html">Home</a>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <img class="sidebar-logo-image" src="src/logo.png">
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='recipes.html'">
+                <p>Recipes</p>
+            </div>
+            <div class="sidebar-nav-button" onclick="window.location.href='pantry.html'">
+                <p>Pantry</p>
+            </div>
 
-    <h1>Grocery List</h1>
+            <div class="sidebar-nav-button" id="logout-button">
+                <p>Logout</p>
+            </div>
 
-    <!-- Button to trigger manual add modal 
-    <button id="manual-add-button" style="position: absolute; top: 20px; right: 20px;">Add Manually</button>
-    -->
-    <!-- Manual Add Modal -->
-    <!-- 
-    <div id="manual-add-modal" class="modal">
-        <div class="modal-content">
-            <span id="close-modal" class="close">&times;</span>
-            <h2>Add Grocery Item</h2>
-            <form id="manual-add-form">
-                <label for="manual-name">Name:</label>
-                <input type="text" id="manual-name" required>
-                <br><br>
-                <label for="manual-amount">Amount:</label>
-                <input type="number" id="manual-amount" min="1" required>
-                <br><br>
-                <button type="submit">Add</button>
-            </form>
+        </div>
+        <div class="content-container">
+            <div class="header-container">
+                <h1>Grocery List</h1>
+                <button class="secondary-button" id="shopped-button">Move List to Pantry</button>
+
+            </div>
+            <div class="views-form-container">
+                <div class="views-form">
+                    <label class="views-label">
+                        <input class="views-radio" type="radio" name="radio" value="grocery" checked="true"/>
+                        <span id="grocery-view" class="views-span-checked">Grocery List</span>
+                    </label>
+                    <label class="views-label">
+                        <input class="views-radio" type="radio" name="radio" value="search"/>
+                        <span id="search-view" class="views-span">Add Items</span>
+                    </label>
+                </div>
+            </div>
+            <div class="search-input-container">
+                <form class="search-form" id="grocery-search-form" action="">
+                    <input class="search-input" type="text" placeholder="Search Items" name="search" id="search" />
+                    <button class="secondary-button" id="search-button" type="submit">Search</button>
+                </form>
+            </div>
+            <div class="content content-pantry" id="grocery-container">
+                <p>Loading...</p>
+            </div>
+            <div class="content content-pantry" id="results-container">
+
+            </div>
+            <div class="popup-container hide" id="popup">
+                <div class="popup">
+                    <p>Added to Pantry!</p>
+                    <div class="popup-buttons">
+                        <button class="secondary-button" onclick="document.getElementById('popup').classList.add('hide')">OK</button>
+                        <button class="secondary-button" onclick="window.location.href='pantry.html'">View Pantry</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-    -->
-    <div>
-        <input id="search-bar" type="text" placeholder="Search for grocery items..." />
-        <button id="search-button">Search</button>
-    </div>
-    <div id="search-results" style="margin-top: 20px;">
-        <!-- Search results will appear here -->
-    </div>
-    <div>
-        <table id="grocery-table">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Amount</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-    <button id="shopped-button">Shopped</button>
+
 
     <script src="src/groceries.js"></script>
 </body>
+<script>
+    document.getElementById('logout-button').addEventListener("click", () => {
+        console.log("hello");
+        localStorage.removeItem("uid");
+        localStorage.removeItem("isAuthenticated");
+        window.location.href = "/";
+    })
+</script>
+
 </html>

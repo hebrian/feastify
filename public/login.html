@@ -9,20 +9,24 @@
 </head>
 
 <body>
-    <p id="error-message" style="display:hidden"></p>
 
-    <form id="login-form" class="login-form" action="">
-        <label class="label" htmlFor="email">
+    <div class="login-form-container">
+        <h1>Feastify - Login</h1>
+        <p id="error-message" style="display:hidden"></p>
+        <form id="login-form" class="login-form" action="">
+            <label class="label" htmlFor="email">
             Email
         </label>
-        <input class="login-form-input" type="email" name="email" id="email" placeholder="Enter your email" />
-        <label class="label" htmlFor="password">
+            <input class="login-form-input" type="email" name="email" id="email" placeholder="Enter your email" />
+            <label class="label" htmlFor="password">
             Password
         </label>
-        <input class="login-form-input" type="password" name="password" id="password" placeholder="Enter your password" />
-        <button type="submit" class="login-form-button">Log In</button>
-    </form>
-    <p>Don't have an account? <a href="register.html">Sign up here</a></p>
+            <input class="login-form-input" type="password" name="password" id="password" placeholder="Enter your password" />
+            <button type="submit" class="login-form-button">Log In</button>
+        </form>
+        <p>Don't have an account? <a href="register.html">Sign up here</a></p>
+    </div>
+
 
     <script src="src/login.js"></script>
 </body>

@@ -225,14 +225,12 @@ async function deleteFromPantry(uid, ingredient) {
 
 async function addToGroceries(uid, ingredient) {
     const client = new MongoClient(new_uri);
-    console.log("adding ingredient to gro db");
     try {
         await client.connect();
         const dbName = client.db("feastify");
         const collection = dbName.collection("groceries");
         const query = { owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }
         const item = await collection.findOne(query);
-        console.log(item);
         if (item === null) {
             let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
             ingredient.nutrition = nutrition;
@@ -472,7 +470,7 @@ app.post('/requestRegister', async(req, res) => {
         if (user != null) {
             res.json({
                 success: false,
-                message: "email already exists in database",
+                message: "We already have an account with that email!",
             });
         } else {
             await registerUser(email, password, lname, fname);
@@ -488,7 +486,6 @@ app.post('/requestRegister', async(req, res) => {
 });
 
 app.post('/addToGroceries', async(req, res) => {
-    console.log("ay");
     await addToGroceries(req.body.owner, req.body.ingredient);
     res.sendStatus(200);
 })
@@ -505,11 +502,9 @@ app.post('/getGroceries', async(req, res) => {
 })
 
 // Update a grocery item's amount
-app.put('/api/groceries/:id', async(req, res) => {
+app.post('/updateGroceryItem', async(req, res) => {
     try {
-        const { id } = req.params;
-        const { amount } = req.body;
-        const uid = req.body.owner;
+        const { uid, id, amount } = req.body;
         await updateGroceryItem(uid, id, amount);
         res.send("Item updated successfully");
     } catch (error) {

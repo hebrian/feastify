@@ -32,10 +32,73 @@ html {
     cursor: pointer;
 }
 
+.primary-button {
+    background-color: var(--primary-lighter-lighter);
+    color: var(--default-text-color);
+    padding: 1vw;
+    max-height: 4em;
+    border: none;
+    border-radius: 5px;
+}
+
+.primary-button:hover {
+    background-color: var(--primary-lighter);
+    cursor: pointer;
+}
+
+.login-form-input {
+    padding: 1.4vmin;
+    border-radius: 1vh;
+    border-style: none none solid none;
+    border-color: gray;
+    background-color: var(--primary-lighter);
+    font-size: 2vmin;
+}
+
+.login-form-input:focus {
+    outline: none;
+    border-color: var(--secondary-darker);
+}
+
+.login-form-button {
+    padding: 2vh;
+    border: none;
+    border-radius: 7px;
+    background-color: var(--secondary);
+    color: white;
+    font-size: 3vmin;
+}
+
+.login-form-button:hover {
+    background-color: var(--secondary-darker);
+    color: var(--off-white);
+}
+
 .login-form {
     display: flex;
     flex-direction: column;
     width: 50%;
+    gap: 1.7vh;
+}
+
+.login-form-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:-webkit-autofill:hover {
+    transition: background-color 15000s;
+    -webkit-text-fill-color: var(--default-text-color) !important;
+}
+
+.label {
+    font-size: 3vmin;
 }
 
 .container {
@@ -302,6 +365,7 @@ html {
 
 .crud-button.amount {
     color: var(--default-text-color);
+    font-size: 80%;
 }
 
 .crud-button.button:hover {
@@ -320,6 +384,54 @@ html {
 
 .crud-button.minus {
     border-radius: .375em 0 0 .375em;
+}
+
+.popup-container {
+    background-color: rgba(30, 30, 30, 0.3);
+    width: 100vw;
+    height: 100vh;
+    padding: 0% 10% 0% 10%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    align-items: center;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    opacity: 1;
+    transition: opacity 0.3s linear;
+}
+
+.popup {
+    width: 70%;
+    border-radius: 5px;
+    background-color: var(--primary);
+    height: 40vh;
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+    align-items: center;
+}
+
+.home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60%;
+    margin-left: 20%;
+}
+
+.home-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 50%;
+}
+
+.home-logo-img {
+    width: 60%;
 }
 
 .hide {
