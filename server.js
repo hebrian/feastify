@@ -229,7 +229,7 @@ async function addToGroceries(uid, ingredient) {
         await client.connect();
         const dbName = client.db("feastify");
         const collection = dbName.collection("groceries");
-        const query = { owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }
+        const query = { owner: uid, spoonacular_id: ingredient.spoonacular_id }
         const item = await collection.findOne(query);
         if (item === null) {
             let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
@@ -238,8 +238,9 @@ async function addToGroceries(uid, ingredient) {
             ingredient.owner = uid;
             await collection.insertOne(ingredient);
         } else {
+            console.log("hello");
             let amount = item.amount + ingredient.amount;
-            await collection.updateOne({ owner: new ObjectId(uid), spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
+            await collection.updateOne({ owner: uid, spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
         }
     } catch (error) {
         console.error("error");
