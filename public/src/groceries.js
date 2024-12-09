@@ -81,6 +81,8 @@ function ingredientBlurb(ingredient, type) {
         plus.classList.add("button");
         plus.innerText = 'Add';
         plus.onclick = async() => {
+            console.log(ingredient.spoonacular_id, ingredient.id);
+
             await addToGroceries(ingredient);
             loadGroceries();
         }
@@ -132,7 +134,7 @@ async function loadGroceries() {
 async function addToGroceries(ingredient) {
     // Assign spoonacular ID to match the database logic
     ingredient.spoonacular_id = ingredient.id;
-    delete ingredient.id; // Avoid conflict with MongoDB's _id
+
     delete ingredient.image; // Simplify storage (optional)
     ingredient.amount = 1; // Default amount
 

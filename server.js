@@ -164,13 +164,14 @@ async function addToPantry(uid, ingredient) {
         const item = await collection.findOne(query);
         if (item === null) {
             let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
+            delete ingredient.id;
             ingredient.nutrition = nutrition;
             ingredient.cost = cost;
             ingredient.owner = uid;
             let res = await collection.insertOne(ingredient);
         } else {
 
-            let amount = item.amount + ingredient.amount;
+            let amount = item.amount + (ingredient.amount * item.nutrition.weightPerServing.amount);
             const result = await collection.updateOne({ owner: uid, spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
         }
 
@@ -235,11 +236,15 @@ async function addToGroceries(uid, ingredient) {
             let { nutrition, cost } = await getCostAndNutrition(ingredient.spoonacular_id)
             ingredient.nutrition = nutrition;
             ingredient.cost = cost;
+            delete ingredient.id;
             ingredient.owner = uid;
             await collection.insertOne(ingredient);
         } else {
             console.log("hello");
-            let amount = item.amount + ingredient.amount;
+            console.log(item);
+            console.log(ingredient.amount, item.nutrition.weightPerServing.amount, (ingredient.amount * item.nutrition.weightPerServing))
+            let amount = item.amount + (ingredient.amount * item.nutrition.weightPerServing.amount);
+            console.log(amount);
             await collection.updateOne({ owner: uid, spoonacular_id: ingredient.spoonacular_id }, { $set: { amount: amount } });
         }
     } catch (error) {

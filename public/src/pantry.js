@@ -161,7 +161,6 @@ document.getElementById('pantry-search-form').addEventListener('submit', functio
 async function addToPantry(ingredient) {
     if (ingredient.spoonacular_id === undefined) {
         ingredient.spoonacular_id = ingredient.id;
-        delete ingredient.id;
         delete ingredient.image;
         ingredient.amount = 1;
     }
